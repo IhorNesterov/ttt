@@ -61,6 +61,7 @@ uint8_t tx_buff[16];
 uint8_t counter = 0;
 volatile NOS_Short tickcount1;
 volatile NOS_Short tickcountBuff;
+NOS_Float uSvValue;
 uint32_t tickcount2 = 0;
 bool time250ms = false;
 NOS_Short time;
@@ -118,11 +119,10 @@ void NOS_ModBus_SendSlaveCommand(ModBus_Slave_Command* slave)
     tx_buff[2] = dat.bytes[1];
     tx_buff[3] = dat.bytes[0];
     tx_buff[4] = stat.Delta;
-    dat.data = Detector_GetuZvValue(&stat);
-    tx_buff[5] = dat.bytes[3];
-    tx_buff[6] = dat.bytes[2];
-    tx_buff[7] = dat.bytes[1];
-    tx_buff[8] = dat.bytes[0];
+    tx_buff[5] = uSvValue.bytes[3];
+    tx_buff[6] = uSvValue.bytes[2];
+    tx_buff[7] = uSvValue.bytes[1];
+    tx_buff[8] = uSvValue.bytes[0];
     tx_buff[9] = stat.Status;
     tx_buff[10] = tickcountBuff.bytes[1];
     tx_buff[11] = tickcountBuff.bytes[0];
@@ -202,11 +202,11 @@ if(time.data >= 250) {
 void EXTI0_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI0_IRQn 0 */
-
+tickcount1.data++;
   /* USER CODE END EXTI0_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
-tickcount1.data++;
+
   /* USER CODE END EXTI0_IRQn 1 */
 }
 
@@ -273,6 +273,7 @@ int main(void)
         if(counter >= 4)
         {
            Stat_GetStatus(&stat);
+           uSvValue.data = Detector_GetuZvValue(&stat);
            slave.type = 5;
            NOS_ModBus_SendSlaveCommand(&slave);
            counter = 0; 
