@@ -272,6 +272,7 @@ int main(void)
         counter++;
         if(counter >= 4)
         {
+           Stat_GetStatus(&stat);
            slave.type = 5;
            NOS_ModBus_SendSlaveCommand(&slave);
            counter = 0; 
