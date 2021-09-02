@@ -1,0 +1,2188 @@
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stat.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.sum,"ax",%progbits
+  18              		.align	1
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	sum:
+  26              	.LVL0:
+  27              	.LFB8:
+  28              		.file 1 "Core/Src/Detector/Code/stat.c"
+   1:Core/Src/Detector/Code/stat.c **** #include <stdio.h>
+   2:Core/Src/Detector/Code/stat.c **** #include <stdint.h>
+   3:Core/Src/Detector/Code/stat.c **** #include <string.h>
+   4:Core/Src/Detector/Code/stat.c **** #include "stat.h"
+   5:Core/Src/Detector/Code/stat.c **** 
+   6:Core/Src/Detector/Code/stat.c **** typedef struct {
+   7:Core/Src/Detector/Code/stat.c ****     stat_pulses_t n;
+   8:Core/Src/Detector/Code/stat.c ****     stat_time_t   t;
+   9:Core/Src/Detector/Code/stat.c **** } stat_elem_t;
+  10:Core/Src/Detector/Code/stat.c **** 
+  11:Core/Src/Detector/Code/stat.c **** #define STAT_COLUMNS        4U
+  12:Core/Src/Detector/Code/stat.c **** #define STAT_ROWS           8U
+  13:Core/Src/Detector/Code/stat.c **** #define STAT_EXTENSION      8U
+  14:Core/Src/Detector/Code/stat.c **** 
+  15:Core/Src/Detector/Code/stat.c **** #define STAT_MATRIX         (STAT_ROWS * STAT_COLUMNS)
+  16:Core/Src/Detector/Code/stat.c **** #define STAT_ELEMENTS       (STAT_MATRIX + STAT_EXTENSION)
+  17:Core/Src/Detector/Code/stat.c **** 
+  18:Core/Src/Detector/Code/stat.c **** #define STAT_K_NUMBER       8U
+  19:Core/Src/Detector/Code/stat.c **** 
+  20:Core/Src/Detector/Code/stat.c **** #define NELEMENTS(a)    (sizeof(a) / sizeof(a[0]))
+  21:Core/Src/Detector/Code/stat.c **** 
+  22:Core/Src/Detector/Code/stat.c **** 
+  23:Core/Src/Detector/Code/stat.c **** static stat_elem_t statistic[STAT_ELEMENTS];
+  24:Core/Src/Detector/Code/stat.c **** static const stat_elem_t *stat_end = statistic;
+  25:Core/Src/Detector/Code/stat.c **** static uint8_t stat_elem_n[STAT_ROWS + 1];
+  26:Core/Src/Detector/Code/stat.c **** static float tau=0;
+  27:Core/Src/Detector/Code/stat.c **** static float tau_1x=0;
+  28:Core/Src/Detector/Code/stat.c **** static unsigned char reject_1_second = 0;
+  29:Core/Src/Detector/Code/stat.c **** 
+  30:Core/Src/Detector/Code/stat.c **** typedef struct {
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 2
+
+
+  31:Core/Src/Detector/Code/stat.c ****     uint8_t high[STAT_K_NUMBER];
+  32:Core/Src/Detector/Code/stat.c ****     uint8_t low;
+  33:Core/Src/Detector/Code/stat.c **** } stat_ksigm_t;
+  34:Core/Src/Detector/Code/stat.c **** 
+  35:Core/Src/Detector/Code/stat.c **** static const stat_ksigm_t k[] = {
+  36:Core/Src/Detector/Code/stat.c ****     { { 6.0, 5.5, 5.0, 4.5, 4.0, 4.0, 4.0, 4.0 }, 2.0 },
+  37:Core/Src/Detector/Code/stat.c ****     { { 7.0, 6.0, 5.3, 5.0, 4.5, 4.0, 4.0, 4.0 }, 3.0 },
+  38:Core/Src/Detector/Code/stat.c ****     { { 8.0, 7.0, 6.0, 5.2, 4.6, 4.0, 4.0, 4.0 }, 3.5 },
+  39:Core/Src/Detector/Code/stat.c ****     { { 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 4.0, 4.0 }, 4.0 },
+  40:Core/Src/Detector/Code/stat.c ****     { { 9.0, 8.0, 7.0, 6.0, 5.0, 4.5, 4.5, 4.5 }, 4.5 },
+  41:Core/Src/Detector/Code/stat.c ****     { { 10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 5.0, 5.0 }, 5.0 }
+  42:Core/Src/Detector/Code/stat.c **** };
+  43:Core/Src/Detector/Code/stat.c **** 
+  44:Core/Src/Detector/Code/stat.c **** 
+  45:Core/Src/Detector/Code/stat.c **** void stat_SetDeatTime(float t) {
+  46:Core/Src/Detector/Code/stat.c ****   tau = t;
+  47:Core/Src/Detector/Code/stat.c ****   if (tau==0) tau_1x=0;
+  48:Core/Src/Detector/Code/stat.c ****   else tau_1x = 1.0/tau;
+  49:Core/Src/Detector/Code/stat.c **** }
+  50:Core/Src/Detector/Code/stat.c **** 
+  51:Core/Src/Detector/Code/stat.c **** // Correction DeatTime
+  52:Core/Src/Detector/Code/stat.c **** float  Get_Tau_CPS(float CPS) {
+  53:Core/Src/Detector/Code/stat.c ****   float k;
+  54:Core/Src/Detector/Code/stat.c ****   if (tau_1x!=0) {
+  55:Core/Src/Detector/Code/stat.c ****       if (CPS>tau_1x) {
+  56:Core/Src/Detector/Code/stat.c ****             CPS *= tau_1x;
+  57:Core/Src/Detector/Code/stat.c ****       } else {
+  58:Core/Src/Detector/Code/stat.c ****             k    = CPS;
+  59:Core/Src/Detector/Code/stat.c ****             k   *= tau;
+  60:Core/Src/Detector/Code/stat.c ****             k    = (1.0 - k);
+  61:Core/Src/Detector/Code/stat.c ****             CPS /= k;
+  62:Core/Src/Detector/Code/stat.c ****       }
+  63:Core/Src/Detector/Code/stat.c ****   }
+  64:Core/Src/Detector/Code/stat.c ****   return CPS;
+  65:Core/Src/Detector/Code/stat.c **** }
+  66:Core/Src/Detector/Code/stat.c **** 
+  67:Core/Src/Detector/Code/stat.c **** void stat_reset (void) {
+  68:Core/Src/Detector/Code/stat.c ****     stat_end = statistic;
+  69:Core/Src/Detector/Code/stat.c ****     memset(stat_elem_n, 0U, sizeof stat_elem_n);
+  70:Core/Src/Detector/Code/stat.c **** }
+  71:Core/Src/Detector/Code/stat.c **** 
+  72:Core/Src/Detector/Code/stat.c **** void stat_accumulate (stat_pulses_t n, stat_time_t t)
+  73:Core/Src/Detector/Code/stat.c **** {
+  74:Core/Src/Detector/Code/stat.c ****     if (stat_end == statistic)
+  75:Core/Src/Detector/Code/stat.c ****     {
+  76:Core/Src/Detector/Code/stat.c ****         statistic[0].n = n;
+  77:Core/Src/Detector/Code/stat.c ****         statistic[0].t = t;
+  78:Core/Src/Detector/Code/stat.c ****         ++stat_end;
+  79:Core/Src/Detector/Code/stat.c ****     }
+  80:Core/Src/Detector/Code/stat.c ****     else
+  81:Core/Src/Detector/Code/stat.c ****     {
+  82:Core/Src/Detector/Code/stat.c ****         statistic[0].n += n;
+  83:Core/Src/Detector/Code/stat.c ****         statistic[0].t += t;
+  84:Core/Src/Detector/Code/stat.c ****     }
+  85:Core/Src/Detector/Code/stat.c **** }
+  86:Core/Src/Detector/Code/stat.c **** 
+  87:Core/Src/Detector/Code/stat.c **** void stat_add (stat_pulses_t n, stat_time_t t)
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 3
+
+
+  88:Core/Src/Detector/Code/stat.c **** {
+  89:Core/Src/Detector/Code/stat.c ****     stat_elem_t first_in_row = {n, t},
+  90:Core/Src/Detector/Code/stat.c ****                 last_in_row = {0U, 0U};
+  91:Core/Src/Detector/Code/stat.c ****     stat_elem_t *cur_row = statistic;
+  92:Core/Src/Detector/Code/stat.c ****     unsigned int cur_row_n = 0U;
+  93:Core/Src/Detector/Code/stat.c **** 
+  94:Core/Src/Detector/Code/stat.c ****     do {
+  95:Core/Src/Detector/Code/stat.c **** 
+  96:Core/Src/Detector/Code/stat.c ****         if (0U < cur_row_n
+  97:Core/Src/Detector/Code/stat.c ****             && STAT_COLUMNS > stat_elem_n[cur_row_n]
+  98:Core/Src/Detector/Code/stat.c ****             && 0U < stat_elem_n[cur_row_n])
+  99:Core/Src/Detector/Code/stat.c ****         {
+ 100:Core/Src/Detector/Code/stat.c ****             cur_row[0U].n += first_in_row.n;
+ 101:Core/Src/Detector/Code/stat.c ****             cur_row[0U].t += first_in_row.t;
+ 102:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 103:Core/Src/Detector/Code/stat.c ****             break;
+ 104:Core/Src/Detector/Code/stat.c ****         }
+ 105:Core/Src/Detector/Code/stat.c ****         last_in_row = cur_row[STAT_COLUMNS - 1U];
+ 106:Core/Src/Detector/Code/stat.c **** 
+ 107:Core/Src/Detector/Code/stat.c ****         memmove(cur_row + 1U, cur_row, sizeof(*cur_row) * (STAT_COLUMNS - 1U));
+ 108:Core/Src/Detector/Code/stat.c **** 
+ 109:Core/Src/Detector/Code/stat.c ****         cur_row[0U] = first_in_row;
+ 110:Core/Src/Detector/Code/stat.c ****         stat_elem_n[cur_row_n] = 1U;
+ 111:Core/Src/Detector/Code/stat.c **** 
+ 112:Core/Src/Detector/Code/stat.c ****         first_in_row = last_in_row;
+ 113:Core/Src/Detector/Code/stat.c **** 
+ 114:Core/Src/Detector/Code/stat.c ****         if ((cur_row + STAT_COLUMNS) > stat_end)
+ 115:Core/Src/Detector/Code/stat.c ****         {
+ 116:Core/Src/Detector/Code/stat.c ****             stat_end += 1U;
+ 117:Core/Src/Detector/Code/stat.c ****             break;
+ 118:Core/Src/Detector/Code/stat.c ****         }
+ 119:Core/Src/Detector/Code/stat.c **** 
+ 120:Core/Src/Detector/Code/stat.c ****         cur_row_n += 1U;
+ 121:Core/Src/Detector/Code/stat.c ****         cur_row += STAT_COLUMNS;
+ 122:Core/Src/Detector/Code/stat.c ****     }
+ 123:Core/Src/Detector/Code/stat.c ****     while (STAT_ROWS > cur_row_n);
+ 124:Core/Src/Detector/Code/stat.c ****     if (cur_row <= stat_end && STAT_ROWS == cur_row_n) {
+ 125:Core/Src/Detector/Code/stat.c ****         if (STAT_COLUMNS > stat_elem_n[cur_row_n]
+ 126:Core/Src/Detector/Code/stat.c ****             && 0U < stat_elem_n[cur_row_n])
+ 127:Core/Src/Detector/Code/stat.c ****         {
+ 128:Core/Src/Detector/Code/stat.c ****             cur_row[0U].n += first_in_row.n;
+ 129:Core/Src/Detector/Code/stat.c ****             cur_row[0U].t += first_in_row.t;
+ 130:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 131:Core/Src/Detector/Code/stat.c ****         }
+ 132:Core/Src/Detector/Code/stat.c ****         else
+ 133:Core/Src/Detector/Code/stat.c ****         {
+ 134:Core/Src/Detector/Code/stat.c ****             memmove(cur_row + 1U, cur_row, sizeof(*cur_row) * (STAT_EXTENSION - 1U));
+ 135:Core/Src/Detector/Code/stat.c ****             cur_row[0U] = first_in_row;
+ 136:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] = 1U;
+ 137:Core/Src/Detector/Code/stat.c ****             if (&statistic[STAT_ELEMENTS] != stat_end) {
+ 138:Core/Src/Detector/Code/stat.c ****                 stat_end += 1U;
+ 139:Core/Src/Detector/Code/stat.c ****             }
+ 140:Core/Src/Detector/Code/stat.c ****         }
+ 141:Core/Src/Detector/Code/stat.c ****     }
+ 142:Core/Src/Detector/Code/stat.c **** }
+ 143:Core/Src/Detector/Code/stat.c **** 
+ 144:Core/Src/Detector/Code/stat.c **** static void sum (stat_elem_t *result, const stat_elem_t *begin, const stat_elem_t *end)
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 4
+
+
+ 145:Core/Src/Detector/Code/stat.c **** {
+  29              		.loc 1 145 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ 146:Core/Src/Detector/Code/stat.c ****     const stat_elem_t *current = begin;
+  34              		.loc 1 146 5 view .LVU1
+ 147:Core/Src/Detector/Code/stat.c ****     result->n = 0U;
+  35              		.loc 1 147 5 view .LVU2
+  36              		.loc 1 147 15 is_stmt 0 view .LVU3
+  37 0000 0023     		movs	r3, #0
+  38 0002 0360     		str	r3, [r0]
+ 148:Core/Src/Detector/Code/stat.c ****     result->t = 0U;
+  39              		.loc 1 148 5 is_stmt 1 view .LVU4
+  40              		.loc 1 148 15 is_stmt 0 view .LVU5
+  41 0004 9FED0C7B 		vldr.64	d7, .L8	@ int
+  42 0008 80ED027B 		vstr.64	d7, [r0, #8]	@ int
+ 149:Core/Src/Detector/Code/stat.c ****     while (current != end)
+  43              		.loc 1 149 5 is_stmt 1 view .LVU6
+  44              		.loc 1 149 11 view .LVU7
+  45 000c 9142     		cmp	r1, r2
+  46 000e 12D0     		beq	.L7
+ 145:Core/Src/Detector/Code/stat.c ****     const stat_elem_t *current = begin;
+  47              		.loc 1 145 1 is_stmt 0 view .LVU8
+  48 0010 30B4     		push	{r4, r5}
+  49              	.LCFI0:
+  50              		.cfi_def_cfa_offset 8
+  51              		.cfi_offset 4, -8
+  52              		.cfi_offset 5, -4
+  53              	.LVL1:
+  54              	.L3:
+ 150:Core/Src/Detector/Code/stat.c ****     {
+ 151:Core/Src/Detector/Code/stat.c ****         result->n += current->n;
+  55              		.loc 1 151 9 is_stmt 1 view .LVU9
+  56              		.loc 1 151 29 is_stmt 0 view .LVU10
+  57 0012 0C68     		ldr	r4, [r1]
+  58              		.loc 1 151 19 view .LVU11
+  59 0014 0368     		ldr	r3, [r0]
+  60 0016 2344     		add	r3, r3, r4
+  61 0018 0360     		str	r3, [r0]
+ 152:Core/Src/Detector/Code/stat.c ****         result->t += current->t;
+  62              		.loc 1 152 9 is_stmt 1 view .LVU12
+  63              		.loc 1 152 19 is_stmt 0 view .LVU13
+  64 001a 8368     		ldr	r3, [r0, #8]
+  65 001c C468     		ldr	r4, [r0, #12]
+  66 001e 8D68     		ldr	r5, [r1, #8]
+  67 0020 5B19     		adds	r3, r3, r5
+  68 0022 CD68     		ldr	r5, [r1, #12]
+  69 0024 45EB0404 		adc	r4, r5, r4
+  70 0028 8360     		str	r3, [r0, #8]
+  71 002a C460     		str	r4, [r0, #12]
+ 153:Core/Src/Detector/Code/stat.c ****         current += 1U;
+  72              		.loc 1 153 9 is_stmt 1 view .LVU14
+  73              		.loc 1 153 17 is_stmt 0 view .LVU15
+  74 002c 1031     		adds	r1, r1, #16
+  75              	.LVL2:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 5
+
+
+ 149:Core/Src/Detector/Code/stat.c ****     {
+  76              		.loc 1 149 11 is_stmt 1 view .LVU16
+  77 002e 9142     		cmp	r1, r2
+  78 0030 EFD1     		bne	.L3
+ 154:Core/Src/Detector/Code/stat.c ****     }
+ 155:Core/Src/Detector/Code/stat.c **** }
+  79              		.loc 1 155 1 is_stmt 0 view .LVU17
+  80 0032 30BC     		pop	{r4, r5}
+  81              	.LCFI1:
+  82              		.cfi_restore 5
+  83              		.cfi_restore 4
+  84              		.cfi_def_cfa_offset 0
+  85 0034 7047     		bx	lr
+  86              	.LVL3:
+  87              	.L7:
+  88              		.loc 1 155 1 view .LVU18
+  89 0036 7047     		bx	lr
+  90              	.L9:
+  91              		.align	3
+  92              	.L8:
+  93 0038 00000000 		.word	0
+  94 003c 00000000 		.word	0
+  95              		.cfi_endproc
+  96              	.LFE8:
+  98              		.section	.text.stat_SetDeatTime,"ax",%progbits
+  99              		.align	1
+ 100              		.global	stat_SetDeatTime
+ 101              		.syntax unified
+ 102              		.thumb
+ 103              		.thumb_func
+ 104              		.fpu fpv4-sp-d16
+ 106              	stat_SetDeatTime:
+ 107              	.LVL4:
+ 108              	.LFB3:
+  45:Core/Src/Detector/Code/stat.c ****   tau = t;
+ 109              		.loc 1 45 32 is_stmt 1 view -0
+ 110              		.cfi_startproc
+ 111              		@ args = 0, pretend = 0, frame = 0
+ 112              		@ frame_needed = 0, uses_anonymous_args = 0
+ 113              		@ link register save eliminated.
+  46:Core/Src/Detector/Code/stat.c ****   if (tau==0) tau_1x=0;
+ 114              		.loc 1 46 3 view .LVU20
+  46:Core/Src/Detector/Code/stat.c ****   if (tau==0) tau_1x=0;
+ 115              		.loc 1 46 7 is_stmt 0 view .LVU21
+ 116 0000 094B     		ldr	r3, .L13
+ 117 0002 83ED000A 		vstr.32	s0, [r3]
+  47:Core/Src/Detector/Code/stat.c ****   else tau_1x = 1.0/tau;
+ 118              		.loc 1 47 3 is_stmt 1 view .LVU22
+  47:Core/Src/Detector/Code/stat.c ****   else tau_1x = 1.0/tau;
+ 119              		.loc 1 47 6 is_stmt 0 view .LVU23
+ 120 0006 B5EE400A 		vcmp.f32	s0, #0
+ 121 000a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 122 000e 03D1     		bne	.L11
+  47:Core/Src/Detector/Code/stat.c ****   else tau_1x = 1.0/tau;
+ 123              		.loc 1 47 15 is_stmt 1 discriminator 1 view .LVU24
+  47:Core/Src/Detector/Code/stat.c ****   else tau_1x = 1.0/tau;
+ 124              		.loc 1 47 21 is_stmt 0 discriminator 1 view .LVU25
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 6
+
+
+ 125 0010 064B     		ldr	r3, .L13+4
+ 126 0012 0022     		movs	r2, #0
+ 127 0014 1A60     		str	r2, [r3]	@ float
+ 128 0016 7047     		bx	lr
+ 129              	.L11:
+  48:Core/Src/Detector/Code/stat.c **** }
+ 130              		.loc 1 48 8 is_stmt 1 view .LVU26
+  48:Core/Src/Detector/Code/stat.c **** }
+ 131              		.loc 1 48 20 is_stmt 0 view .LVU27
+ 132 0018 B7EE007A 		vmov.f32	s14, #1.0e+0
+ 133 001c C7EE007A 		vdiv.f32	s15, s14, s0
+  48:Core/Src/Detector/Code/stat.c **** }
+ 134              		.loc 1 48 15 view .LVU28
+ 135 0020 024B     		ldr	r3, .L13+4
+ 136 0022 C3ED007A 		vstr.32	s15, [r3]
+  49:Core/Src/Detector/Code/stat.c **** 
+ 137              		.loc 1 49 1 view .LVU29
+ 138 0026 7047     		bx	lr
+ 139              	.L14:
+ 140              		.align	2
+ 141              	.L13:
+ 142 0028 00000000 		.word	.LANCHOR0
+ 143 002c 00000000 		.word	.LANCHOR1
+ 144              		.cfi_endproc
+ 145              	.LFE3:
+ 147              		.section	.text.Get_Tau_CPS,"ax",%progbits
+ 148              		.align	1
+ 149              		.global	Get_Tau_CPS
+ 150              		.syntax unified
+ 151              		.thumb
+ 152              		.thumb_func
+ 153              		.fpu fpv4-sp-d16
+ 155              	Get_Tau_CPS:
+ 156              	.LVL5:
+ 157              	.LFB4:
+  52:Core/Src/Detector/Code/stat.c ****   float k;
+ 158              		.loc 1 52 31 is_stmt 1 view -0
+ 159              		.cfi_startproc
+ 160              		@ args = 0, pretend = 0, frame = 0
+ 161              		@ frame_needed = 0, uses_anonymous_args = 0
+ 162              		@ link register save eliminated.
+  53:Core/Src/Detector/Code/stat.c ****   if (tau_1x!=0) {
+ 163              		.loc 1 53 3 view .LVU31
+  54:Core/Src/Detector/Code/stat.c ****       if (CPS>tau_1x) {
+ 164              		.loc 1 54 3 view .LVU32
+  54:Core/Src/Detector/Code/stat.c ****       if (CPS>tau_1x) {
+ 165              		.loc 1 54 13 is_stmt 0 view .LVU33
+ 166 0000 0D4B     		ldr	r3, .L21
+ 167 0002 D3ED007A 		vldr.32	s15, [r3]
+  54:Core/Src/Detector/Code/stat.c ****       if (CPS>tau_1x) {
+ 168              		.loc 1 54 6 view .LVU34
+ 169 0006 F5EE407A 		vcmp.f32	s15, #0
+ 170 000a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 171 000e 12D0     		beq	.L16
+  55:Core/Src/Detector/Code/stat.c ****             CPS *= tau_1x;
+ 172              		.loc 1 55 7 is_stmt 1 view .LVU35
+  55:Core/Src/Detector/Code/stat.c ****             CPS *= tau_1x;
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 7
+
+
+ 173              		.loc 1 55 10 is_stmt 0 view .LVU36
+ 174 0010 F4EEC07A 		vcmpe.f32	s15, s0
+ 175 0014 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 176 0018 02D5     		bpl	.L20
+  56:Core/Src/Detector/Code/stat.c ****       } else {
+ 177              		.loc 1 56 13 is_stmt 1 view .LVU37
+  56:Core/Src/Detector/Code/stat.c ****       } else {
+ 178              		.loc 1 56 17 is_stmt 0 view .LVU38
+ 179 001a 20EE270A 		vmul.f32	s0, s0, s15
+ 180              	.LVL6:
+  56:Core/Src/Detector/Code/stat.c ****       } else {
+ 181              		.loc 1 56 17 view .LVU39
+ 182 001e 7047     		bx	lr
+ 183              	.L20:
+  58:Core/Src/Detector/Code/stat.c ****             k   *= tau;
+ 184              		.loc 1 58 13 is_stmt 1 view .LVU40
+ 185              	.LVL7:
+  59:Core/Src/Detector/Code/stat.c ****             k    = (1.0 - k);
+ 186              		.loc 1 59 13 view .LVU41
+  59:Core/Src/Detector/Code/stat.c ****             k    = (1.0 - k);
+ 187              		.loc 1 59 17 is_stmt 0 view .LVU42
+ 188 0020 064B     		ldr	r3, .L21+4
+ 189 0022 D3ED007A 		vldr.32	s15, [r3]
+ 190 0026 20EE277A 		vmul.f32	s14, s0, s15
+ 191              	.LVL8:
+  60:Core/Src/Detector/Code/stat.c ****             CPS /= k;
+ 192              		.loc 1 60 13 is_stmt 1 view .LVU43
+  60:Core/Src/Detector/Code/stat.c ****             CPS /= k;
+ 193              		.loc 1 60 18 is_stmt 0 view .LVU44
+ 194 002a F7EE007A 		vmov.f32	s15, #1.0e+0
+ 195 002e 77EEC77A 		vsub.f32	s15, s15, s14
+ 196              	.LVL9:
+  61:Core/Src/Detector/Code/stat.c ****       }
+ 197              		.loc 1 61 13 is_stmt 1 view .LVU45
+  61:Core/Src/Detector/Code/stat.c ****       }
+ 198              		.loc 1 61 17 is_stmt 0 view .LVU46
+ 199 0032 80EE270A 		vdiv.f32	s0, s0, s15
+ 200              	.LVL10:
+ 201              	.L16:
+  64:Core/Src/Detector/Code/stat.c **** }
+ 202              		.loc 1 64 3 is_stmt 1 view .LVU47
+  65:Core/Src/Detector/Code/stat.c **** 
+ 203              		.loc 1 65 1 is_stmt 0 view .LVU48
+ 204 0036 7047     		bx	lr
+ 205              	.L22:
+ 206              		.align	2
+ 207              	.L21:
+ 208 0038 00000000 		.word	.LANCHOR1
+ 209 003c 00000000 		.word	.LANCHOR0
+ 210              		.cfi_endproc
+ 211              	.LFE4:
+ 213              		.section	.text.stat_reset,"ax",%progbits
+ 214              		.align	1
+ 215              		.global	stat_reset
+ 216              		.syntax unified
+ 217              		.thumb
+ 218              		.thumb_func
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 8
+
+
+ 219              		.fpu fpv4-sp-d16
+ 221              	stat_reset:
+ 222              	.LFB5:
+  67:Core/Src/Detector/Code/stat.c ****     stat_end = statistic;
+ 223              		.loc 1 67 24 is_stmt 1 view -0
+ 224              		.cfi_startproc
+ 225              		@ args = 0, pretend = 0, frame = 0
+ 226              		@ frame_needed = 0, uses_anonymous_args = 0
+ 227              		@ link register save eliminated.
+  68:Core/Src/Detector/Code/stat.c ****     memset(stat_elem_n, 0U, sizeof stat_elem_n);
+ 228              		.loc 1 68 5 view .LVU50
+  68:Core/Src/Detector/Code/stat.c ****     memset(stat_elem_n, 0U, sizeof stat_elem_n);
+ 229              		.loc 1 68 14 is_stmt 0 view .LVU51
+ 230 0000 044B     		ldr	r3, .L24
+ 231 0002 054A     		ldr	r2, .L24+4
+ 232 0004 1A60     		str	r2, [r3]
+  69:Core/Src/Detector/Code/stat.c **** }
+ 233              		.loc 1 69 5 is_stmt 1 view .LVU52
+ 234 0006 054B     		ldr	r3, .L24+8
+ 235 0008 0022     		movs	r2, #0
+ 236 000a 1A60     		str	r2, [r3]
+ 237 000c 5A60     		str	r2, [r3, #4]
+ 238 000e 1A72     		strb	r2, [r3, #8]
+  70:Core/Src/Detector/Code/stat.c **** 
+ 239              		.loc 1 70 1 is_stmt 0 view .LVU53
+ 240 0010 7047     		bx	lr
+ 241              	.L25:
+ 242 0012 00BF     		.align	2
+ 243              	.L24:
+ 244 0014 00000000 		.word	.LANCHOR2
+ 245 0018 00000000 		.word	.LANCHOR3
+ 246 001c 00000000 		.word	.LANCHOR4
+ 247              		.cfi_endproc
+ 248              	.LFE5:
+ 250              		.section	.text.stat_accumulate,"ax",%progbits
+ 251              		.align	1
+ 252              		.global	stat_accumulate
+ 253              		.syntax unified
+ 254              		.thumb
+ 255              		.thumb_func
+ 256              		.fpu fpv4-sp-d16
+ 258              	stat_accumulate:
+ 259              	.LVL11:
+ 260              	.LFB6:
+  73:Core/Src/Detector/Code/stat.c ****     if (stat_end == statistic)
+ 261              		.loc 1 73 1 is_stmt 1 view -0
+ 262              		.cfi_startproc
+ 263              		@ args = 0, pretend = 0, frame = 0
+ 264              		@ frame_needed = 0, uses_anonymous_args = 0
+ 265              		@ link register save eliminated.
+  73:Core/Src/Detector/Code/stat.c ****     if (stat_end == statistic)
+ 266              		.loc 1 73 1 is_stmt 0 view .LVU55
+ 267 0000 10B4     		push	{r4}
+ 268              	.LCFI2:
+ 269              		.cfi_def_cfa_offset 4
+ 270              		.cfi_offset 4, -4
+  74:Core/Src/Detector/Code/stat.c ****     {
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 9
+
+
+ 271              		.loc 1 74 5 is_stmt 1 view .LVU56
+  74:Core/Src/Detector/Code/stat.c ****     {
+ 272              		.loc 1 74 18 is_stmt 0 view .LVU57
+ 273 0002 0D49     		ldr	r1, .L31
+ 274 0004 0968     		ldr	r1, [r1]
+  74:Core/Src/Detector/Code/stat.c ****     {
+ 275              		.loc 1 74 8 view .LVU58
+ 276 0006 0D4C     		ldr	r4, .L31+4
+ 277 0008 A142     		cmp	r1, r4
+ 278 000a 0DD0     		beq	.L30
+  82:Core/Src/Detector/Code/stat.c ****         statistic[0].t += t;
+ 279              		.loc 1 82 9 is_stmt 1 view .LVU59
+  82:Core/Src/Detector/Code/stat.c ****         statistic[0].t += t;
+ 280              		.loc 1 82 24 is_stmt 0 view .LVU60
+ 281 000c 0B49     		ldr	r1, .L31+4
+ 282 000e 0C68     		ldr	r4, [r1]
+ 283 0010 2044     		add	r0, r0, r4
+ 284              	.LVL12:
+  82:Core/Src/Detector/Code/stat.c ****         statistic[0].t += t;
+ 285              		.loc 1 82 24 view .LVU61
+ 286 0012 0860     		str	r0, [r1]
+  83:Core/Src/Detector/Code/stat.c ****     }
+ 287              		.loc 1 83 9 is_stmt 1 view .LVU62
+  83:Core/Src/Detector/Code/stat.c ****     }
+ 288              		.loc 1 83 24 is_stmt 0 view .LVU63
+ 289 0014 8868     		ldr	r0, [r1, #8]
+ 290 0016 CC68     		ldr	r4, [r1, #12]
+ 291 0018 8218     		adds	r2, r0, r2
+ 292              	.LVL13:
+  83:Core/Src/Detector/Code/stat.c ****     }
+ 293              		.loc 1 83 24 view .LVU64
+ 294 001a 43EB0403 		adc	r3, r3, r4
+ 295 001e 8A60     		str	r2, [r1, #8]
+ 296 0020 CB60     		str	r3, [r1, #12]
+ 297              	.L26:
+  85:Core/Src/Detector/Code/stat.c **** 
+ 298              		.loc 1 85 1 view .LVU65
+ 299 0022 5DF8044B 		ldr	r4, [sp], #4
+ 300              	.LCFI3:
+ 301              		.cfi_remember_state
+ 302              		.cfi_restore 4
+ 303              		.cfi_def_cfa_offset 0
+ 304 0026 7047     		bx	lr
+ 305              	.LVL14:
+ 306              	.L30:
+ 307              	.LCFI4:
+ 308              		.cfi_restore_state
+  76:Core/Src/Detector/Code/stat.c ****         statistic[0].t = t;
+ 309              		.loc 1 76 9 is_stmt 1 view .LVU66
+  76:Core/Src/Detector/Code/stat.c ****         statistic[0].t = t;
+ 310              		.loc 1 76 24 is_stmt 0 view .LVU67
+ 311 0028 2060     		str	r0, [r4]
+  77:Core/Src/Detector/Code/stat.c ****         ++stat_end;
+ 312              		.loc 1 77 9 is_stmt 1 view .LVU68
+  77:Core/Src/Detector/Code/stat.c ****         ++stat_end;
+ 313              		.loc 1 77 24 is_stmt 0 view .LVU69
+ 314 002a A260     		str	r2, [r4, #8]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 10
+
+
+ 315 002c E360     		str	r3, [r4, #12]
+  78:Core/Src/Detector/Code/stat.c ****     }
+ 316              		.loc 1 78 9 is_stmt 1 view .LVU70
+ 317 002e 1031     		adds	r1, r1, #16
+ 318 0030 014B     		ldr	r3, .L31
+ 319 0032 1960     		str	r1, [r3]
+ 320 0034 F5E7     		b	.L26
+ 321              	.L32:
+ 322 0036 00BF     		.align	2
+ 323              	.L31:
+ 324 0038 00000000 		.word	.LANCHOR2
+ 325 003c 00000000 		.word	.LANCHOR3
+ 326              		.cfi_endproc
+ 327              	.LFE6:
+ 329              		.section	.text.stat_add,"ax",%progbits
+ 330              		.align	1
+ 331              		.global	stat_add
+ 332              		.syntax unified
+ 333              		.thumb
+ 334              		.thumb_func
+ 335              		.fpu fpv4-sp-d16
+ 337              	stat_add:
+ 338              	.LVL15:
+ 339              	.LFB7:
+  88:Core/Src/Detector/Code/stat.c ****     stat_elem_t first_in_row = {n, t},
+ 340              		.loc 1 88 1 view -0
+ 341              		.cfi_startproc
+ 342              		@ args = 0, pretend = 0, frame = 32
+ 343              		@ frame_needed = 0, uses_anonymous_args = 0
+  88:Core/Src/Detector/Code/stat.c ****     stat_elem_t first_in_row = {n, t},
+ 344              		.loc 1 88 1 is_stmt 0 view .LVU72
+ 345 0000 70B5     		push	{r4, r5, r6, lr}
+ 346              	.LCFI5:
+ 347              		.cfi_def_cfa_offset 16
+ 348              		.cfi_offset 4, -16
+ 349              		.cfi_offset 5, -12
+ 350              		.cfi_offset 6, -8
+ 351              		.cfi_offset 14, -4
+ 352 0002 88B0     		sub	sp, sp, #32
+ 353              	.LCFI6:
+ 354              		.cfi_def_cfa_offset 48
+  89:Core/Src/Detector/Code/stat.c ****                 last_in_row = {0U, 0U};
+ 355              		.loc 1 89 5 is_stmt 1 view .LVU73
+  89:Core/Src/Detector/Code/stat.c ****                 last_in_row = {0U, 0U};
+ 356              		.loc 1 89 17 is_stmt 0 view .LVU74
+ 357 0004 0490     		str	r0, [sp, #16]
+ 358 0006 CDE90623 		strd	r2, [sp, #24]
+  90:Core/Src/Detector/Code/stat.c ****     stat_elem_t *cur_row = statistic;
+ 359              		.loc 1 90 17 view .LVU75
+ 360 000a 0026     		movs	r6, #0
+ 361 000c 0096     		str	r6, [sp]
+ 362 000e 0022     		movs	r2, #0
+ 363              	.LVL16:
+  90:Core/Src/Detector/Code/stat.c ****     stat_elem_t *cur_row = statistic;
+ 364              		.loc 1 90 17 view .LVU76
+ 365 0010 0023     		movs	r3, #0
+ 366 0012 CDE90223 		strd	r2, [sp, #8]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 11
+
+
+  91:Core/Src/Detector/Code/stat.c ****     unsigned int cur_row_n = 0U;
+ 367              		.loc 1 91 5 is_stmt 1 view .LVU77
+ 368              	.LVL17:
+  92:Core/Src/Detector/Code/stat.c **** 
+ 369              		.loc 1 92 5 view .LVU78
+  91:Core/Src/Detector/Code/stat.c ****     unsigned int cur_row_n = 0U;
+ 370              		.loc 1 91 18 is_stmt 0 view .LVU79
+ 371 0016 3C4C     		ldr	r4, .L44
+ 372 0018 22E0     		b	.L37
+ 373              	.LVL18:
+ 374              	.L34:
+ 105:Core/Src/Detector/Code/stat.c **** 
+ 375              		.loc 1 105 9 is_stmt 1 view .LVU80
+ 105:Core/Src/Detector/Code/stat.c **** 
+ 376              		.loc 1 105 21 is_stmt 0 view .LVU81
+ 377 001a 6D46     		mov	r5, sp
+ 378 001c 04F13003 		add	r3, r4, #48
+ 379 0020 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 380 0022 85E80F00 		stm	r5, {r0, r1, r2, r3}
+ 107:Core/Src/Detector/Code/stat.c **** 
+ 381              		.loc 1 107 9 is_stmt 1 view .LVU82
+ 382 0026 3022     		movs	r2, #48
+ 383 0028 2146     		mov	r1, r4
+ 384 002a 04F11000 		add	r0, r4, #16
+ 385 002e FFF7FEFF 		bl	memmove
+ 386              	.LVL19:
+ 109:Core/Src/Detector/Code/stat.c ****         stat_elem_n[cur_row_n] = 1U;
+ 387              		.loc 1 109 9 view .LVU83
+ 109:Core/Src/Detector/Code/stat.c ****         stat_elem_n[cur_row_n] = 1U;
+ 388              		.loc 1 109 21 is_stmt 0 view .LVU84
+ 389 0032 0DF1100C 		add	ip, sp, #16
+ 390 0036 9CE80F00 		ldm	ip, {r0, r1, r2, r3}
+ 391 003a 84E80F00 		stm	r4, {r0, r1, r2, r3}
+ 110:Core/Src/Detector/Code/stat.c **** 
+ 392              		.loc 1 110 9 is_stmt 1 view .LVU85
+ 110:Core/Src/Detector/Code/stat.c **** 
+ 393              		.loc 1 110 32 is_stmt 0 view .LVU86
+ 394 003e 334B     		ldr	r3, .L44+4
+ 395 0040 0122     		movs	r2, #1
+ 396 0042 9A55     		strb	r2, [r3, r6]
+ 112:Core/Src/Detector/Code/stat.c **** 
+ 397              		.loc 1 112 9 is_stmt 1 view .LVU87
+ 112:Core/Src/Detector/Code/stat.c **** 
+ 398              		.loc 1 112 22 is_stmt 0 view .LVU88
+ 399 0044 95E80F00 		ldm	r5, {r0, r1, r2, r3}
+ 400 0048 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 114:Core/Src/Detector/Code/stat.c ****         {
+ 401              		.loc 1 114 9 is_stmt 1 view .LVU89
+ 114:Core/Src/Detector/Code/stat.c ****         {
+ 402              		.loc 1 114 22 is_stmt 0 view .LVU90
+ 403 004c 04F14005 		add	r5, r4, #64
+ 114:Core/Src/Detector/Code/stat.c ****         {
+ 404              		.loc 1 114 38 view .LVU91
+ 405 0050 2F4B     		ldr	r3, .L44+8
+ 406 0052 1B68     		ldr	r3, [r3]
+ 114:Core/Src/Detector/Code/stat.c ****         {
+ 407              		.loc 1 114 12 view .LVU92
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 12
+
+
+ 408 0054 9D42     		cmp	r5, r3
+ 409 0056 1ED8     		bhi	.L42
+ 120:Core/Src/Detector/Code/stat.c ****         cur_row += STAT_COLUMNS;
+ 410              		.loc 1 120 9 is_stmt 1 view .LVU93
+ 120:Core/Src/Detector/Code/stat.c ****         cur_row += STAT_COLUMNS;
+ 411              		.loc 1 120 19 is_stmt 0 view .LVU94
+ 412 0058 0136     		adds	r6, r6, #1
+ 413              	.LVL20:
+ 121:Core/Src/Detector/Code/stat.c ****     }
+ 414              		.loc 1 121 9 is_stmt 1 view .LVU95
+ 123:Core/Src/Detector/Code/stat.c ****     if (cur_row <= stat_end && STAT_ROWS == cur_row_n) {
+ 415              		.loc 1 123 11 view .LVU96
+ 123:Core/Src/Detector/Code/stat.c ****     if (cur_row <= stat_end && STAT_ROWS == cur_row_n) {
+ 416              		.loc 1 123 5 is_stmt 0 view .LVU97
+ 417 005a 072E     		cmp	r6, #7
+ 418 005c 1FD8     		bhi	.L35
+ 121:Core/Src/Detector/Code/stat.c ****     }
+ 419              		.loc 1 121 17 view .LVU98
+ 420 005e 2C46     		mov	r4, r5
+ 421              	.LVL21:
+ 422              	.L37:
+  94:Core/Src/Detector/Code/stat.c **** 
+ 423              		.loc 1 94 5 is_stmt 1 view .LVU99
+  96:Core/Src/Detector/Code/stat.c ****             && STAT_COLUMNS > stat_elem_n[cur_row_n]
+ 424              		.loc 1 96 9 view .LVU100
+  96:Core/Src/Detector/Code/stat.c ****             && STAT_COLUMNS > stat_elem_n[cur_row_n]
+ 425              		.loc 1 96 12 is_stmt 0 view .LVU101
+ 426 0060 002E     		cmp	r6, #0
+ 427 0062 DAD0     		beq	.L34
+  97:Core/Src/Detector/Code/stat.c ****             && 0U < stat_elem_n[cur_row_n])
+ 428              		.loc 1 97 42 view .LVU102
+ 429 0064 294B     		ldr	r3, .L44+4
+ 430 0066 9B5D     		ldrb	r3, [r3, r6]	@ zero_extendqisi2
+  97:Core/Src/Detector/Code/stat.c ****             && 0U < stat_elem_n[cur_row_n])
+ 431              		.loc 1 97 13 view .LVU103
+ 432 0068 032B     		cmp	r3, #3
+ 433 006a D6D8     		bhi	.L34
+  98:Core/Src/Detector/Code/stat.c ****         {
+ 434              		.loc 1 98 13 view .LVU104
+ 435 006c 002B     		cmp	r3, #0
+ 436 006e D4D0     		beq	.L34
+ 100:Core/Src/Detector/Code/stat.c ****             cur_row[0U].t += first_in_row.t;
+ 437              		.loc 1 100 13 is_stmt 1 view .LVU105
+ 100:Core/Src/Detector/Code/stat.c ****             cur_row[0U].t += first_in_row.t;
+ 438              		.loc 1 100 27 is_stmt 0 view .LVU106
+ 439 0070 2368     		ldr	r3, [r4]
+ 440 0072 049A     		ldr	r2, [sp, #16]
+ 441 0074 1344     		add	r3, r3, r2
+ 442 0076 2360     		str	r3, [r4]
+ 101:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 443              		.loc 1 101 13 is_stmt 1 view .LVU107
+ 101:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 444              		.loc 1 101 42 is_stmt 0 view .LVU108
+ 445 0078 069A     		ldr	r2, [sp, #24]
+ 101:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 446              		.loc 1 101 27 view .LVU109
+ 447 007a A368     		ldr	r3, [r4, #8]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 13
+
+
+ 448 007c E168     		ldr	r1, [r4, #12]
+ 449 007e 9B18     		adds	r3, r3, r2
+ 450 0080 079A     		ldr	r2, [sp, #28]
+ 451 0082 42EB0102 		adc	r2, r2, r1
+ 452 0086 A360     		str	r3, [r4, #8]
+ 453 0088 E260     		str	r2, [r4, #12]
+ 102:Core/Src/Detector/Code/stat.c ****             break;
+ 454              		.loc 1 102 13 is_stmt 1 view .LVU110
+ 102:Core/Src/Detector/Code/stat.c ****             break;
+ 455              		.loc 1 102 36 is_stmt 0 view .LVU111
+ 456 008a 204A     		ldr	r2, .L44+4
+ 457 008c 935D     		ldrb	r3, [r2, r6]	@ zero_extendqisi2
+ 458 008e 0133     		adds	r3, r3, #1
+ 459 0090 9355     		strb	r3, [r2, r6]
+ 103:Core/Src/Detector/Code/stat.c ****         }
+ 460              		.loc 1 103 13 is_stmt 1 view .LVU112
+ 461 0092 2546     		mov	r5, r4
+ 462 0094 03E0     		b	.L35
+ 463              	.L42:
+ 116:Core/Src/Detector/Code/stat.c ****             break;
+ 464              		.loc 1 116 13 view .LVU113
+ 116:Core/Src/Detector/Code/stat.c ****             break;
+ 465              		.loc 1 116 22 is_stmt 0 view .LVU114
+ 466 0096 1033     		adds	r3, r3, #16
+ 467 0098 1D4A     		ldr	r2, .L44+8
+ 468 009a 1360     		str	r3, [r2]
+ 117:Core/Src/Detector/Code/stat.c ****         }
+ 469              		.loc 1 117 13 is_stmt 1 view .LVU115
+ 470 009c 2546     		mov	r5, r4
+ 471              	.LVL22:
+ 472              	.L35:
+ 124:Core/Src/Detector/Code/stat.c ****         if (STAT_COLUMNS > stat_elem_n[cur_row_n]
+ 473              		.loc 1 124 5 view .LVU116
+ 124:Core/Src/Detector/Code/stat.c ****         if (STAT_COLUMNS > stat_elem_n[cur_row_n]
+ 474              		.loc 1 124 17 is_stmt 0 view .LVU117
+ 475 009e 1C4B     		ldr	r3, .L44+8
+ 476 00a0 1C68     		ldr	r4, [r3]
+ 124:Core/Src/Detector/Code/stat.c ****         if (STAT_COLUMNS > stat_elem_n[cur_row_n]
+ 477              		.loc 1 124 8 view .LVU118
+ 478 00a2 AC42     		cmp	r4, r5
+ 479 00a4 01D3     		bcc	.L33
+ 124:Core/Src/Detector/Code/stat.c ****         if (STAT_COLUMNS > stat_elem_n[cur_row_n]
+ 480              		.loc 1 124 29 discriminator 1 view .LVU119
+ 481 00a6 082E     		cmp	r6, #8
+ 482 00a8 01D0     		beq	.L43
+ 483              	.L33:
+ 142:Core/Src/Detector/Code/stat.c **** 
+ 484              		.loc 1 142 1 view .LVU120
+ 485 00aa 08B0     		add	sp, sp, #32
+ 486              	.LCFI7:
+ 487              		.cfi_remember_state
+ 488              		.cfi_def_cfa_offset 16
+ 489              		@ sp needed
+ 490 00ac 70BD     		pop	{r4, r5, r6, pc}
+ 491              	.LVL23:
+ 492              	.L43:
+ 493              	.LCFI8:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 14
+
+
+ 494              		.cfi_restore_state
+ 125:Core/Src/Detector/Code/stat.c ****             && 0U < stat_elem_n[cur_row_n])
+ 495              		.loc 1 125 9 is_stmt 1 view .LVU121
+ 125:Core/Src/Detector/Code/stat.c ****             && 0U < stat_elem_n[cur_row_n])
+ 496              		.loc 1 125 39 is_stmt 0 view .LVU122
+ 497 00ae 174B     		ldr	r3, .L44+4
+ 498 00b0 9B5D     		ldrb	r3, [r3, r6]	@ zero_extendqisi2
+ 126:Core/Src/Detector/Code/stat.c ****         {
+ 499              		.loc 1 126 13 view .LVU123
+ 500 00b2 013B     		subs	r3, r3, #1
+ 501 00b4 DBB2     		uxtb	r3, r3
+ 125:Core/Src/Detector/Code/stat.c ****             && 0U < stat_elem_n[cur_row_n])
+ 502              		.loc 1 125 12 view .LVU124
+ 503 00b6 022B     		cmp	r3, #2
+ 504 00b8 11D8     		bhi	.L39
+ 128:Core/Src/Detector/Code/stat.c ****             cur_row[0U].t += first_in_row.t;
+ 505              		.loc 1 128 13 is_stmt 1 view .LVU125
+ 128:Core/Src/Detector/Code/stat.c ****             cur_row[0U].t += first_in_row.t;
+ 506              		.loc 1 128 27 is_stmt 0 view .LVU126
+ 507 00ba 2B68     		ldr	r3, [r5]
+ 508 00bc 049A     		ldr	r2, [sp, #16]
+ 509 00be 1344     		add	r3, r3, r2
+ 510 00c0 2B60     		str	r3, [r5]
+ 129:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 511              		.loc 1 129 13 is_stmt 1 view .LVU127
+ 129:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 512              		.loc 1 129 42 is_stmt 0 view .LVU128
+ 513 00c2 0699     		ldr	r1, [sp, #24]
+ 129:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] += 1U;
+ 514              		.loc 1 129 27 view .LVU129
+ 515 00c4 AB68     		ldr	r3, [r5, #8]
+ 516 00c6 E868     		ldr	r0, [r5, #12]
+ 517 00c8 5B18     		adds	r3, r3, r1
+ 518 00ca 079A     		ldr	r2, [sp, #28]
+ 519 00cc 42EB0002 		adc	r2, r2, r0
+ 520 00d0 AB60     		str	r3, [r5, #8]
+ 521 00d2 EA60     		str	r2, [r5, #12]
+ 130:Core/Src/Detector/Code/stat.c ****         }
+ 522              		.loc 1 130 13 is_stmt 1 view .LVU130
+ 130:Core/Src/Detector/Code/stat.c ****         }
+ 523              		.loc 1 130 36 is_stmt 0 view .LVU131
+ 524 00d4 0D4A     		ldr	r2, .L44+4
+ 525 00d6 935D     		ldrb	r3, [r2, r6]	@ zero_extendqisi2
+ 526 00d8 0133     		adds	r3, r3, #1
+ 527 00da 9355     		strb	r3, [r2, r6]
+ 528 00dc E5E7     		b	.L33
+ 529              	.L39:
+ 134:Core/Src/Detector/Code/stat.c ****             cur_row[0U] = first_in_row;
+ 530              		.loc 1 134 13 is_stmt 1 view .LVU132
+ 531 00de 7022     		movs	r2, #112
+ 532 00e0 2946     		mov	r1, r5
+ 533 00e2 05F11000 		add	r0, r5, #16
+ 534 00e6 FFF7FEFF 		bl	memmove
+ 535              	.LVL24:
+ 135:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] = 1U;
+ 536              		.loc 1 135 13 view .LVU133
+ 135:Core/Src/Detector/Code/stat.c ****             stat_elem_n[cur_row_n] = 1U;
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 15
+
+
+ 537              		.loc 1 135 25 is_stmt 0 view .LVU134
+ 538 00ea 08AB     		add	r3, sp, #32
+ 539 00ec 13E90F00 		ldmdb	r3, {r0, r1, r2, r3}
+ 540 00f0 85E80F00 		stm	r5, {r0, r1, r2, r3}
+ 136:Core/Src/Detector/Code/stat.c ****             if (&statistic[STAT_ELEMENTS] != stat_end) {
+ 541              		.loc 1 136 13 is_stmt 1 view .LVU135
+ 136:Core/Src/Detector/Code/stat.c ****             if (&statistic[STAT_ELEMENTS] != stat_end) {
+ 542              		.loc 1 136 36 is_stmt 0 view .LVU136
+ 543 00f4 054B     		ldr	r3, .L44+4
+ 544 00f6 0122     		movs	r2, #1
+ 545 00f8 9A55     		strb	r2, [r3, r6]
+ 137:Core/Src/Detector/Code/stat.c ****                 stat_end += 1U;
+ 546              		.loc 1 137 13 is_stmt 1 view .LVU137
+ 137:Core/Src/Detector/Code/stat.c ****                 stat_end += 1U;
+ 547              		.loc 1 137 16 is_stmt 0 view .LVU138
+ 548 00fa 064B     		ldr	r3, .L44+12
+ 549 00fc 9C42     		cmp	r4, r3
+ 550 00fe D4D0     		beq	.L33
+ 138:Core/Src/Detector/Code/stat.c ****             }
+ 551              		.loc 1 138 17 is_stmt 1 view .LVU139
+ 138:Core/Src/Detector/Code/stat.c ****             }
+ 552              		.loc 1 138 26 is_stmt 0 view .LVU140
+ 553 0100 1034     		adds	r4, r4, #16
+ 554 0102 034B     		ldr	r3, .L44+8
+ 555 0104 1C60     		str	r4, [r3]
+ 142:Core/Src/Detector/Code/stat.c **** 
+ 556              		.loc 1 142 1 view .LVU141
+ 557 0106 D0E7     		b	.L33
+ 558              	.L45:
+ 559              		.align	2
+ 560              	.L44:
+ 561 0108 00000000 		.word	.LANCHOR3
+ 562 010c 00000000 		.word	.LANCHOR4
+ 563 0110 00000000 		.word	.LANCHOR2
+ 564 0114 80020000 		.word	.LANCHOR3+640
+ 565              		.cfi_endproc
+ 566              	.LFE7:
+ 568              		.section	.text.fsqrt,"ax",%progbits
+ 569              		.align	1
+ 570              		.global	fsqrt
+ 571              		.syntax unified
+ 572              		.thumb
+ 573              		.thumb_func
+ 574              		.fpu fpv4-sp-d16
+ 576              	fsqrt:
+ 577              	.LVL25:
+ 578              	.LFB9:
+ 156:Core/Src/Detector/Code/stat.c **** 
+ 157:Core/Src/Detector/Code/stat.c **** 
+ 158:Core/Src/Detector/Code/stat.c **** 
+ 159:Core/Src/Detector/Code/stat.c **** 
+ 160:Core/Src/Detector/Code/stat.c **** 
+ 161:Core/Src/Detector/Code/stat.c **** 
+ 162:Core/Src/Detector/Code/stat.c **** float fsqrt(float z) {
+ 579              		.loc 1 162 22 is_stmt 1 view -0
+ 580              		.cfi_startproc
+ 581              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 16
+
+
+ 582              		@ frame_needed = 0, uses_anonymous_args = 0
+ 583              		@ link register save eliminated.
+ 163:Core/Src/Detector/Code/stat.c ****  if (z==0) return 0;
+ 584              		.loc 1 163 2 view .LVU143
+ 585              		.loc 1 163 5 is_stmt 0 view .LVU144
+ 586 0000 B5EE400A 		vcmp.f32	s0, #0
+ 587 0004 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 588 0008 09D0     		beq	.L48
+ 164:Core/Src/Detector/Code/stat.c ****  union {float f; uint32_t i; } val = {z};
+ 589              		.loc 1 164 2 is_stmt 1 view .LVU145
+ 165:Core/Src/Detector/Code/stat.c ****  val.i -= 8388608;
+ 590              		.loc 1 165 2 view .LVU146
+ 591              		.loc 1 165 8 is_stmt 0 view .LVU147
+ 592 000a 10EE103A 		vmov	r3, s0	@ int
+ 593 000e A3F50003 		sub	r3, r3, #8388608
+ 166:Core/Src/Detector/Code/stat.c ****  val.i >>= 1;
+ 594              		.loc 1 166 2 is_stmt 1 view .LVU148
+ 595              		.loc 1 166 8 is_stmt 0 view .LVU149
+ 596 0012 5B08     		lsrs	r3, r3, #1
+ 167:Core/Src/Detector/Code/stat.c ****  val.i += 536870912;
+ 597              		.loc 1 167 2 is_stmt 1 view .LVU150
+ 168:Core/Src/Detector/Code/stat.c ****  return val.f;
+ 598              		.loc 1 168 2 view .LVU151
+ 599 0014 03F10053 		add	r3, r3, #536870912
+ 600 0018 00EE103A 		vmov	s0, r3	@ int
+ 601              	.LVL26:
+ 602              		.loc 1 168 12 is_stmt 0 view .LVU152
+ 603 001c 7047     		bx	lr
+ 604              	.LVL27:
+ 605              	.L48:
+ 163:Core/Src/Detector/Code/stat.c ****  union {float f; uint32_t i; } val = {z};
+ 606              		.loc 1 163 19 view .LVU153
+ 607 001e 9FED010A 		vldr.32	s0, .L49
+ 608              	.LVL28:
+ 169:Core/Src/Detector/Code/stat.c **** }
+ 609              		.loc 1 169 1 view .LVU154
+ 610 0022 7047     		bx	lr
+ 611              	.L50:
+ 612              		.align	2
+ 613              	.L49:
+ 614 0024 00000000 		.word	0
+ 615              		.cfi_endproc
+ 616              	.LFE9:
+ 618              		.global	__aeabi_ul2f
+ 619              		.section	.text.border_low_tpc,"ax",%progbits
+ 620              		.align	1
+ 621              		.syntax unified
+ 622              		.thumb
+ 623              		.thumb_func
+ 624              		.fpu fpv4-sp-d16
+ 626              	border_low_tpc:
+ 627              	.LVL29:
+ 628              	.LFB11:
+ 170:Core/Src/Detector/Code/stat.c **** 
+ 171:Core/Src/Detector/Code/stat.c **** inline static float border_high_tpc (const stat_elem_t *val, unsigned int k_num) {
+ 172:Core/Src/Detector/Code/stat.c **** 
+ 173:Core/Src/Detector/Code/stat.c ****     const unsigned int k_num_high = (k_num >> 4) & 0x0F;
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 17
+
+
+ 174:Core/Src/Detector/Code/stat.c ****     const float k_high = k[k_num_high].high[(val->n >= STAT_K_NUMBER ? STAT_K_NUMBER - 1U : val->n)
+ 175:Core/Src/Detector/Code/stat.c **** 
+ 176:Core/Src/Detector/Code/stat.c ****     float n_plus_k_mul_sqrt_n;
+ 177:Core/Src/Detector/Code/stat.c **** 
+ 178:Core/Src/Detector/Code/stat.c ****     if (0 == val->n) {
+ 179:Core/Src/Detector/Code/stat.c ****         n_plus_k_mul_sqrt_n = 1 + k_high;
+ 180:Core/Src/Detector/Code/stat.c ****     } else {
+ 181:Core/Src/Detector/Code/stat.c ****         n_plus_k_mul_sqrt_n = val->n + k_high * fsqrt(val->n);
+ 182:Core/Src/Detector/Code/stat.c ****     }
+ 183:Core/Src/Detector/Code/stat.c ****     return val->t / n_plus_k_mul_sqrt_n;
+ 184:Core/Src/Detector/Code/stat.c **** }
+ 185:Core/Src/Detector/Code/stat.c **** 
+ 186:Core/Src/Detector/Code/stat.c **** 
+ 187:Core/Src/Detector/Code/stat.c **** static float border_low_tpc (const stat_elem_t *val, unsigned int k_num) {
+ 629              		.loc 1 187 74 is_stmt 1 view -0
+ 630              		.cfi_startproc
+ 631              		@ args = 0, pretend = 0, frame = 0
+ 632              		@ frame_needed = 0, uses_anonymous_args = 0
+ 188:Core/Src/Detector/Code/stat.c **** 	float ret;
+ 633              		.loc 1 188 2 view .LVU156
+ 189:Core/Src/Detector/Code/stat.c **** 	if (0 == val->n) {
+ 634              		.loc 1 189 2 view .LVU157
+ 635              		.loc 1 189 14 is_stmt 0 view .LVU158
+ 636 0000 0368     		ldr	r3, [r0]
+ 637              		.loc 1 189 5 view .LVU159
+ 638 0002 33B3     		cbz	r3, .L53
+ 187:Core/Src/Detector/Code/stat.c **** 	float ret;
+ 639              		.loc 1 187 74 view .LVU160
+ 640 0004 10B5     		push	{r4, lr}
+ 641              	.LCFI9:
+ 642              		.cfi_def_cfa_offset 8
+ 643              		.cfi_offset 4, -8
+ 644              		.cfi_offset 14, -4
+ 645 0006 2DED028B 		vpush.64	{d8}
+ 646              	.LCFI10:
+ 647              		.cfi_def_cfa_offset 16
+ 648              		.cfi_offset 80, -16
+ 649              		.cfi_offset 81, -12
+ 650 000a 0446     		mov	r4, r0
+ 651              	.LBB2:
+ 190:Core/Src/Detector/Code/stat.c **** 		ret = UINT64_MAX;
+ 191:Core/Src/Detector/Code/stat.c **** 	} else {
+ 192:Core/Src/Detector/Code/stat.c **** 		const float k_mul_sqrt_n = k[k_num].low * fsqrt(val->n);
+ 652              		.loc 1 192 3 is_stmt 1 view .LVU161
+ 653              		.loc 1 192 38 is_stmt 0 view .LVU162
+ 654 000c 01EBC101 		add	r1, r1, r1, lsl #3
+ 655              	.LVL30:
+ 656              		.loc 1 192 38 view .LVU163
+ 657 0010 144A     		ldr	r2, .L59
+ 658 0012 1144     		add	r1, r1, r2
+ 659 0014 0A7A     		ldrb	r2, [r1, #8]	@ zero_extendqisi2
+ 660 0016 08EE902A 		vmov	s17, r2	@ int
+ 661              		.loc 1 192 43 view .LVU164
+ 662 001a F8EEE88A 		vcvt.f32.s32	s17, s17
+ 663              		.loc 1 192 45 view .LVU165
+ 664 001e 07EE903A 		vmov	s15, r3	@ int
+ 665 0022 B8EE678A 		vcvt.f32.u32	s16, s15
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 18
+
+
+ 666 0026 B0EE480A 		vmov.f32	s0, s16
+ 667 002a FFF7FEFF 		bl	fsqrt
+ 668              	.LVL31:
+ 669              		.loc 1 192 15 view .LVU166
+ 670 002e 68EE808A 		vmul.f32	s17, s17, s0
+ 671              	.LVL32:
+ 193:Core/Src/Detector/Code/stat.c **** 		if (k_mul_sqrt_n >= val->n) {
+ 672              		.loc 1 193 3 is_stmt 1 view .LVU167
+ 673              		.loc 1 193 6 is_stmt 0 view .LVU168
+ 674 0032 B4EEE88A 		vcmpe.f32	s16, s17
+ 675 0036 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 676 003a 0DD9     		bls	.L54
+ 194:Core/Src/Detector/Code/stat.c **** 			ret = UINT64_MAX;
+ 195:Core/Src/Detector/Code/stat.c **** 		} else {
+ 196:Core/Src/Detector/Code/stat.c **** 			ret = val->t / (val->n - k_mul_sqrt_n);
+ 677              		.loc 1 196 4 is_stmt 1 view .LVU169
+ 678              		.loc 1 196 17 is_stmt 0 view .LVU170
+ 679 003c D4E90201 		ldrd	r0, [r4, #8]
+ 680 0040 FFF7FEFF 		bl	__aeabi_ul2f
+ 681              	.LVL33:
+ 682 0044 07EE900A 		vmov	s15, r0
+ 683              		.loc 1 196 27 view .LVU171
+ 684 0048 38EE688A 		vsub.f32	s16, s16, s17
+ 685              		.loc 1 196 8 view .LVU172
+ 686 004c 87EE880A 		vdiv.f32	s0, s15, s16
+ 687              	.LVL34:
+ 688              		.loc 1 196 8 view .LVU173
+ 689 0050 04E0     		b	.L51
+ 690              	.LVL35:
+ 691              	.L53:
+ 692              	.LCFI11:
+ 693              		.cfi_def_cfa_offset 0
+ 694              		.cfi_restore 4
+ 695              		.cfi_restore 14
+ 696              		.cfi_restore 80
+ 697              		.cfi_restore 81
+ 698              		.loc 1 196 8 view .LVU174
+ 699              	.LBE2:
+ 190:Core/Src/Detector/Code/stat.c **** 	} else {
+ 700              		.loc 1 190 7 view .LVU175
+ 701 0052 9FED050A 		vldr.32	s0, .L59+4
+ 197:Core/Src/Detector/Code/stat.c **** 		}
+ 198:Core/Src/Detector/Code/stat.c **** 	}
+ 199:Core/Src/Detector/Code/stat.c **** 	return ret;
+ 200:Core/Src/Detector/Code/stat.c **** }
+ 702              		.loc 1 200 1 view .LVU176
+ 703 0056 7047     		bx	lr
+ 704              	.LVL36:
+ 705              	.L54:
+ 706              	.LCFI12:
+ 707              		.cfi_def_cfa_offset 16
+ 708              		.cfi_offset 4, -8
+ 709              		.cfi_offset 14, -4
+ 710              		.cfi_offset 80, -16
+ 711              		.cfi_offset 81, -12
+ 712              	.LBB3:
+ 194:Core/Src/Detector/Code/stat.c **** 		} else {
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 19
+
+
+ 713              		.loc 1 194 8 view .LVU177
+ 714 0058 9FED030A 		vldr.32	s0, .L59+4
+ 715              	.LVL37:
+ 194:Core/Src/Detector/Code/stat.c **** 		} else {
+ 716              		.loc 1 194 8 view .LVU178
+ 717              	.LBE3:
+ 199:Core/Src/Detector/Code/stat.c **** }
+ 718              		.loc 1 199 2 is_stmt 1 view .LVU179
+ 719              	.L51:
+ 720              		.loc 1 200 1 is_stmt 0 view .LVU180
+ 721 005c BDEC028B 		vldm	sp!, {d8}
+ 722              	.LCFI13:
+ 723              		.cfi_restore 80
+ 724              		.cfi_restore 81
+ 725              		.cfi_def_cfa_offset 8
+ 726 0060 10BD     		pop	{r4, pc}
+ 727              	.LVL38:
+ 728              	.L60:
+ 729              		.loc 1 200 1 view .LVU181
+ 730 0062 00BF     		.align	2
+ 731              	.L59:
+ 732 0064 00000000 		.word	.LANCHOR5
+ 733 0068 0000805F 		.word	1602224128
+ 734              		.cfi_endproc
+ 735              	.LFE11:
+ 737              		.section	.text.need_reject,"ax",%progbits
+ 738              		.align	1
+ 739              		.syntax unified
+ 740              		.thumb
+ 741              		.thumb_func
+ 742              		.fpu fpv4-sp-d16
+ 744              	need_reject:
+ 745              	.LVL39:
+ 746              	.LFB12:
+ 201:Core/Src/Detector/Code/stat.c **** 
+ 202:Core/Src/Detector/Code/stat.c **** 
+ 203:Core/Src/Detector/Code/stat.c **** static unsigned int need_reject (const stat_elem_t *head, const stat_elem_t *tail, unsigned int k_n
+ 747              		.loc 1 203 104 is_stmt 1 view -0
+ 748              		.cfi_startproc
+ 749              		@ args = 0, pretend = 0, frame = 0
+ 750              		@ frame_needed = 0, uses_anonymous_args = 0
+ 751              		.loc 1 203 104 is_stmt 0 view .LVU183
+ 752 0000 70B5     		push	{r4, r5, r6, lr}
+ 753              	.LCFI14:
+ 754              		.cfi_def_cfa_offset 16
+ 755              		.cfi_offset 4, -16
+ 756              		.cfi_offset 5, -12
+ 757              		.cfi_offset 6, -8
+ 758              		.cfi_offset 14, -4
+ 759 0002 2DED028B 		vpush.64	{d8}
+ 760              	.LCFI15:
+ 761              		.cfi_def_cfa_offset 24
+ 762              		.cfi_offset 80, -24
+ 763              		.cfi_offset 81, -20
+ 764 0006 0546     		mov	r5, r0
+ 765 0008 0E46     		mov	r6, r1
+ 766 000a 1446     		mov	r4, r2
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 20
+
+
+ 204:Core/Src/Detector/Code/stat.c ****     if (border_high_tpc(head, k_num) > border_low_tpc(tail, k_num) || border_high_tpc(tail, k_num) 
+ 767              		.loc 1 204 5 is_stmt 1 view .LVU184
+ 768              	.LVL40:
+ 769              	.LBB8:
+ 770              	.LBI8:
+ 171:Core/Src/Detector/Code/stat.c **** 
+ 771              		.loc 1 171 21 view .LVU185
+ 772              	.LBB9:
+ 173:Core/Src/Detector/Code/stat.c ****     const float k_high = k[k_num_high].high[(val->n >= STAT_K_NUMBER ? STAT_K_NUMBER - 1U : val->n)
+ 773              		.loc 1 173 5 view .LVU186
+ 173:Core/Src/Detector/Code/stat.c ****     const float k_high = k[k_num_high].high[(val->n >= STAT_K_NUMBER ? STAT_K_NUMBER - 1U : val->n)
+ 774              		.loc 1 173 24 is_stmt 0 view .LVU187
+ 775 000c C2F30312 		ubfx	r2, r2, #4, #4
+ 776              	.LVL41:
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 777              		.loc 1 174 5 is_stmt 1 view .LVU188
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 778              		.loc 1 174 49 is_stmt 0 view .LVU189
+ 779 0010 0368     		ldr	r3, [r0]
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 780              		.loc 1 174 91 view .LVU190
+ 781 0012 1846     		mov	r0, r3
+ 782              	.LVL42:
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 783              		.loc 1 174 91 view .LVU191
+ 784 0014 072B     		cmp	r3, #7
+ 785 0016 28BF     		it	cs
+ 786 0018 0720     		movcs	r0, #7
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 787              		.loc 1 174 44 view .LVU192
+ 788 001a 02EBC202 		add	r2, r2, r2, lsl #3
+ 789              	.LVL43:
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 790              		.loc 1 174 44 view .LVU193
+ 791 001e 3349     		ldr	r1, .L73
+ 792              	.LVL44:
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 793              		.loc 1 174 44 view .LVU194
+ 794 0020 0A44     		add	r2, r2, r1
+ 795 0022 125C     		ldrb	r2, [r2, r0]	@ zero_extendqisi2
+ 796 0024 08EE102A 		vmov	s16, r2	@ int
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 797              		.loc 1 174 17 view .LVU195
+ 798 0028 F8EE488A 		vcvt.f32.u32	s17, s16
+ 799              	.LVL45:
+ 176:Core/Src/Detector/Code/stat.c **** 
+ 800              		.loc 1 176 5 is_stmt 1 view .LVU196
+ 178:Core/Src/Detector/Code/stat.c ****         n_plus_k_mul_sqrt_n = 1 + k_high;
+ 801              		.loc 1 178 5 view .LVU197
+ 178:Core/Src/Detector/Code/stat.c ****         n_plus_k_mul_sqrt_n = 1 + k_high;
+ 802              		.loc 1 178 8 is_stmt 0 view .LVU198
+ 803 002c 002B     		cmp	r3, #0
+ 804 002e 3CD1     		bne	.L62
+ 179:Core/Src/Detector/Code/stat.c ****     } else {
+ 805              		.loc 1 179 9 is_stmt 1 view .LVU199
+ 179:Core/Src/Detector/Code/stat.c ****     } else {
+ 806              		.loc 1 179 29 is_stmt 0 view .LVU200
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 21
+
+
+ 807 0030 B7EE008A 		vmov.f32	s16, #1.0e+0
+ 808 0034 38EE888A 		vadd.f32	s16, s17, s16
+ 809              	.LVL46:
+ 810              	.L63:
+ 183:Core/Src/Detector/Code/stat.c **** }
+ 811              		.loc 1 183 5 is_stmt 1 view .LVU201
+ 183:Core/Src/Detector/Code/stat.c **** }
+ 812              		.loc 1 183 19 is_stmt 0 view .LVU202
+ 813 0038 D5E90201 		ldrd	r0, [r5, #8]
+ 814 003c FFF7FEFF 		bl	__aeabi_ul2f
+ 815              	.LVL47:
+ 816 0040 07EE900A 		vmov	s15, r0
+ 817 0044 C7EE888A 		vdiv.f32	s17, s15, s16
+ 818              	.LVL48:
+ 183:Core/Src/Detector/Code/stat.c **** }
+ 819              		.loc 1 183 19 view .LVU203
+ 820              	.LBE9:
+ 821              	.LBE8:
+ 822              		.loc 1 204 40 view .LVU204
+ 823 0048 2146     		mov	r1, r4
+ 824 004a 3046     		mov	r0, r6
+ 825 004c FFF7FEFF 		bl	border_low_tpc
+ 826              	.LVL49:
+ 827              		.loc 1 204 8 view .LVU205
+ 828 0050 B4EEE80A 		vcmpe.f32	s0, s17
+ 829 0054 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 830 0058 41D4     		bmi	.L68
+ 831              	.LVL50:
+ 832              	.LBB11:
+ 833              	.LBI11:
+ 171:Core/Src/Detector/Code/stat.c **** 
+ 834              		.loc 1 171 21 is_stmt 1 view .LVU206
+ 835              	.LBB12:
+ 173:Core/Src/Detector/Code/stat.c ****     const float k_high = k[k_num_high].high[(val->n >= STAT_K_NUMBER ? STAT_K_NUMBER - 1U : val->n)
+ 836              		.loc 1 173 5 view .LVU207
+ 173:Core/Src/Detector/Code/stat.c ****     const float k_high = k[k_num_high].high[(val->n >= STAT_K_NUMBER ? STAT_K_NUMBER - 1U : val->n)
+ 837              		.loc 1 173 24 is_stmt 0 view .LVU208
+ 838 005a C4F30312 		ubfx	r2, r4, #4, #4
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 839              		.loc 1 174 5 is_stmt 1 view .LVU209
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 840              		.loc 1 174 49 is_stmt 0 view .LVU210
+ 841 005e 3368     		ldr	r3, [r6]
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 842              		.loc 1 174 91 view .LVU211
+ 843 0060 1846     		mov	r0, r3
+ 844 0062 072B     		cmp	r3, #7
+ 845 0064 28BF     		it	cs
+ 846 0066 0720     		movcs	r0, #7
+ 174:Core/Src/Detector/Code/stat.c **** 
+ 847              		.loc 1 174 44 view .LVU212
+ 848 0068 02EBC202 		add	r2, r2, r2, lsl #3
+ 849 006c 1F49     		ldr	r1, .L73
+ 850 006e 0A44     		add	r2, r2, r1
+ 851 0070 125C     		ldrb	r2, [r2, r0]	@ zero_extendqisi2
+ 852 0072 08EE102A 		vmov	s16, r2	@ int
+ 174:Core/Src/Detector/Code/stat.c **** 
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 22
+
+
+ 853              		.loc 1 174 17 view .LVU213
+ 854 0076 F8EE488A 		vcvt.f32.u32	s17, s16
+ 855              	.LVL51:
+ 176:Core/Src/Detector/Code/stat.c **** 
+ 856              		.loc 1 176 5 is_stmt 1 view .LVU214
+ 178:Core/Src/Detector/Code/stat.c ****         n_plus_k_mul_sqrt_n = 1 + k_high;
+ 857              		.loc 1 178 5 view .LVU215
+ 178:Core/Src/Detector/Code/stat.c ****         n_plus_k_mul_sqrt_n = 1 + k_high;
+ 858              		.loc 1 178 8 is_stmt 0 view .LVU216
+ 859 007a 1BBB     		cbnz	r3, .L65
+ 179:Core/Src/Detector/Code/stat.c ****     } else {
+ 860              		.loc 1 179 9 is_stmt 1 view .LVU217
+ 179:Core/Src/Detector/Code/stat.c ****     } else {
+ 861              		.loc 1 179 29 is_stmt 0 view .LVU218
+ 862 007c B7EE008A 		vmov.f32	s16, #1.0e+0
+ 863 0080 38EE888A 		vadd.f32	s16, s17, s16
+ 864              	.LVL52:
+ 865              	.L66:
+ 183:Core/Src/Detector/Code/stat.c **** }
+ 866              		.loc 1 183 5 is_stmt 1 view .LVU219
+ 183:Core/Src/Detector/Code/stat.c **** }
+ 867              		.loc 1 183 19 is_stmt 0 view .LVU220
+ 868 0084 D6E90201 		ldrd	r0, [r6, #8]
+ 869 0088 FFF7FEFF 		bl	__aeabi_ul2f
+ 870              	.LVL53:
+ 871 008c 07EE900A 		vmov	s15, r0
+ 872 0090 C7EE888A 		vdiv.f32	s17, s15, s16
+ 873              	.LVL54:
+ 183:Core/Src/Detector/Code/stat.c **** }
+ 874              		.loc 1 183 19 view .LVU221
+ 875              	.LBE12:
+ 876              	.LBE11:
+ 877              		.loc 1 204 102 view .LVU222
+ 878 0094 2146     		mov	r1, r4
+ 879 0096 2846     		mov	r0, r5
+ 880 0098 FFF7FEFF 		bl	border_low_tpc
+ 881              	.LVL55:
+ 882              		.loc 1 204 68 view .LVU223
+ 883 009c B4EEE80A 		vcmpe.f32	s0, s17
+ 884 00a0 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 885 00a4 1FD5     		bpl	.L71
+ 205:Core/Src/Detector/Code/stat.c ****         return 1;
+ 886              		.loc 1 205 16 view .LVU224
+ 887 00a6 0120     		movs	r0, #1
+ 888 00a8 1AE0     		b	.L61
+ 889              	.LVL56:
+ 890              	.L62:
+ 891              	.LBB14:
+ 892              	.LBB10:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 893              		.loc 1 181 9 is_stmt 1 view .LVU225
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 894              		.loc 1 181 38 is_stmt 0 view .LVU226
+ 895 00aa 07EE903A 		vmov	s15, r3	@ int
+ 896 00ae B8EE678A 		vcvt.f32.u32	s16, s15
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 897              		.loc 1 181 49 view .LVU227
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 23
+
+
+ 898 00b2 B0EE480A 		vmov.f32	s0, s16
+ 899 00b6 FFF7FEFF 		bl	fsqrt
+ 900              	.LVL57:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 901              		.loc 1 181 47 view .LVU228
+ 902 00ba 68EE808A 		vmul.f32	s17, s17, s0
+ 903              	.LVL58:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 904              		.loc 1 181 29 view .LVU229
+ 905 00be 38EE288A 		vadd.f32	s16, s16, s17
+ 906              	.LVL59:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 907              		.loc 1 181 29 view .LVU230
+ 908 00c2 B9E7     		b	.L63
+ 909              	.LVL60:
+ 910              	.L65:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 911              		.loc 1 181 29 view .LVU231
+ 912              	.LBE10:
+ 913              	.LBE14:
+ 914              	.LBB15:
+ 915              	.LBB13:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 916              		.loc 1 181 9 is_stmt 1 view .LVU232
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 917              		.loc 1 181 38 is_stmt 0 view .LVU233
+ 918 00c4 07EE903A 		vmov	s15, r3	@ int
+ 919 00c8 B8EE678A 		vcvt.f32.u32	s16, s15
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 920              		.loc 1 181 49 view .LVU234
+ 921 00cc B0EE480A 		vmov.f32	s0, s16
+ 922 00d0 FFF7FEFF 		bl	fsqrt
+ 923              	.LVL61:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 924              		.loc 1 181 47 view .LVU235
+ 925 00d4 68EE808A 		vmul.f32	s17, s17, s0
+ 926              	.LVL62:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 927              		.loc 1 181 29 view .LVU236
+ 928 00d8 38EE288A 		vadd.f32	s16, s16, s17
+ 929              	.LVL63:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 930              		.loc 1 181 29 view .LVU237
+ 931 00dc D2E7     		b	.L66
+ 932              	.LVL64:
+ 933              	.L68:
+ 181:Core/Src/Detector/Code/stat.c ****     }
+ 934              		.loc 1 181 29 view .LVU238
+ 935              	.LBE13:
+ 936              	.LBE15:
+ 937              		.loc 1 205 16 view .LVU239
+ 938 00de 0120     		movs	r0, #1
+ 939              	.L61:
+ 206:Core/Src/Detector/Code/stat.c ****     }  else {
+ 207:Core/Src/Detector/Code/stat.c ****         return 0;
+ 208:Core/Src/Detector/Code/stat.c ****     }
+ 209:Core/Src/Detector/Code/stat.c **** }
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 24
+
+
+ 940              		.loc 1 209 1 view .LVU240
+ 941 00e0 BDEC028B 		vldm	sp!, {d8}
+ 942              	.LCFI16:
+ 943              		.cfi_remember_state
+ 944              		.cfi_restore 80
+ 945              		.cfi_restore 81
+ 946              		.cfi_def_cfa_offset 16
+ 947 00e4 70BD     		pop	{r4, r5, r6, pc}
+ 948              	.LVL65:
+ 949              	.L71:
+ 950              	.LCFI17:
+ 951              		.cfi_restore_state
+ 207:Core/Src/Detector/Code/stat.c ****     }
+ 952              		.loc 1 207 16 view .LVU241
+ 953 00e6 0020     		movs	r0, #0
+ 954 00e8 FAE7     		b	.L61
+ 955              	.L74:
+ 956 00ea 00BF     		.align	2
+ 957              	.L73:
+ 958 00ec 00000000 		.word	.LANCHOR5
+ 959              		.cfi_endproc
+ 960              	.LFE12:
+ 962              		.section	.text.stat_check,"ax",%progbits
+ 963              		.align	1
+ 964              		.global	stat_check
+ 965              		.syntax unified
+ 966              		.thumb
+ 967              		.thumb_func
+ 968              		.fpu fpv4-sp-d16
+ 970              	stat_check:
+ 971              	.LVL66:
+ 972              	.LFB13:
+ 210:Core/Src/Detector/Code/stat.c **** 
+ 211:Core/Src/Detector/Code/stat.c **** 
+ 212:Core/Src/Detector/Code/stat.c **** void stat_check (unsigned int k_num) {
+ 973              		.loc 1 212 38 is_stmt 1 view -0
+ 974              		.cfi_startproc
+ 975              		@ args = 0, pretend = 0, frame = 48
+ 976              		@ frame_needed = 0, uses_anonymous_args = 0
+ 213:Core/Src/Detector/Code/stat.c **** 
+ 214:Core/Src/Detector/Code/stat.c ****     if (3 > (stat_end - statistic)) { return;}
+ 977              		.loc 1 214 5 view .LVU243
+ 978              		.loc 1 214 23 is_stmt 0 view .LVU244
+ 979 0000 4B4B     		ldr	r3, .L93
+ 980 0002 1A68     		ldr	r2, [r3]
+ 981 0004 4B4B     		ldr	r3, .L93+4
+ 982 0006 D31A     		subs	r3, r2, r3
+ 983              		.loc 1 214 8 view .LVU245
+ 984 0008 202B     		cmp	r3, #32
+ 985 000a 00DC     		bgt	.L90
+ 986 000c 7047     		bx	lr
+ 987              	.L90:
+ 212:Core/Src/Detector/Code/stat.c **** 
+ 988              		.loc 1 212 38 view .LVU246
+ 989 000e 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 990              	.LCFI18:
+ 991              		.cfi_def_cfa_offset 24
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 25
+
+
+ 992              		.cfi_offset 4, -24
+ 993              		.cfi_offset 5, -20
+ 994              		.cfi_offset 6, -16
+ 995              		.cfi_offset 7, -12
+ 996              		.cfi_offset 8, -8
+ 997              		.cfi_offset 14, -4
+ 998 0012 8CB0     		sub	sp, sp, #48
+ 999              	.LCFI19:
+ 1000              		.cfi_def_cfa_offset 72
+ 1001 0014 8046     		mov	r8, r0
+ 215:Core/Src/Detector/Code/stat.c **** 
+ 216:Core/Src/Detector/Code/stat.c ****     stat_elem_t tail;
+ 1002              		.loc 1 216 5 is_stmt 1 view .LVU247
+ 217:Core/Src/Detector/Code/stat.c **** 
+ 218:Core/Src/Detector/Code/stat.c ****     sum(&tail, statistic + 2, stat_end);
+ 1003              		.loc 1 218 5 view .LVU248
+ 1004 0016 474C     		ldr	r4, .L93+4
+ 1005 0018 04F12001 		add	r1, r4, #32
+ 1006 001c 08A8     		add	r0, sp, #32
+ 1007              	.LVL67:
+ 1008              		.loc 1 218 5 is_stmt 0 view .LVU249
+ 1009 001e FFF7FEFF 		bl	sum
+ 1010              	.LVL68:
+ 219:Core/Src/Detector/Code/stat.c **** 
+ 220:Core/Src/Detector/Code/stat.c **** 
+ 221:Core/Src/Detector/Code/stat.c ****     if (need_reject(statistic, &tail, k_num))
+ 1011              		.loc 1 221 5 is_stmt 1 view .LVU250
+ 1012              		.loc 1 221 9 is_stmt 0 view .LVU251
+ 1013 0022 4246     		mov	r2, r8
+ 1014 0024 08A9     		add	r1, sp, #32
+ 1015 0026 2046     		mov	r0, r4
+ 1016 0028 FFF7FEFF 		bl	need_reject
+ 1017              	.LVL69:
+ 1018              		.loc 1 221 8 view .LVU252
+ 1019 002c 90B1     		cbz	r0, .L77
+ 222:Core/Src/Detector/Code/stat.c ****     {
+ 223:Core/Src/Detector/Code/stat.c ****         if (reject_1_second)
+ 1020              		.loc 1 223 9 is_stmt 1 view .LVU253
+ 1021              		.loc 1 223 13 is_stmt 0 view .LVU254
+ 1022 002e 424B     		ldr	r3, .L93+8
+ 1023 0030 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1024              		.loc 1 223 12 view .LVU255
+ 1025 0032 1BB9     		cbnz	r3, .L91
+ 224:Core/Src/Detector/Code/stat.c ****         {
+ 225:Core/Src/Detector/Code/stat.c ****             reject_1_second = 0;
+ 226:Core/Src/Detector/Code/stat.c ****             stat_end = statistic + 2U;
+ 227:Core/Src/Detector/Code/stat.c ****             memset(stat_elem_n, 0U, sizeof stat_elem_n);
+ 228:Core/Src/Detector/Code/stat.c ****             return;
+ 229:Core/Src/Detector/Code/stat.c ****         }
+ 230:Core/Src/Detector/Code/stat.c ****         else
+ 231:Core/Src/Detector/Code/stat.c ****         {
+ 232:Core/Src/Detector/Code/stat.c ****             reject_1_second = 1;
+ 1026              		.loc 1 232 13 is_stmt 1 view .LVU256
+ 1027              		.loc 1 232 29 is_stmt 0 view .LVU257
+ 1028 0034 404B     		ldr	r3, .L93+8
+ 1029 0036 0122     		movs	r2, #1
+ 1030 0038 1A70     		strb	r2, [r3]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 26
+
+
+ 1031 003a 18E0     		b	.L79
+ 1032              	.L91:
+ 225:Core/Src/Detector/Code/stat.c ****             stat_end = statistic + 2U;
+ 1033              		.loc 1 225 13 is_stmt 1 view .LVU258
+ 225:Core/Src/Detector/Code/stat.c ****             stat_end = statistic + 2U;
+ 1034              		.loc 1 225 29 is_stmt 0 view .LVU259
+ 1035 003c 0023     		movs	r3, #0
+ 1036 003e 3E4A     		ldr	r2, .L93+8
+ 1037 0040 1370     		strb	r3, [r2]
+ 226:Core/Src/Detector/Code/stat.c ****             memset(stat_elem_n, 0U, sizeof stat_elem_n);
+ 1038              		.loc 1 226 13 is_stmt 1 view .LVU260
+ 226:Core/Src/Detector/Code/stat.c ****             memset(stat_elem_n, 0U, sizeof stat_elem_n);
+ 1039              		.loc 1 226 22 is_stmt 0 view .LVU261
+ 1040 0042 3B4A     		ldr	r2, .L93
+ 1041 0044 04F12001 		add	r1, r4, #32
+ 1042 0048 1160     		str	r1, [r2]
+ 227:Core/Src/Detector/Code/stat.c ****             return;
+ 1043              		.loc 1 227 13 is_stmt 1 view .LVU262
+ 1044 004a 3C4A     		ldr	r2, .L93+12
+ 1045 004c 1360     		str	r3, [r2]
+ 1046 004e 5360     		str	r3, [r2, #4]
+ 1047 0050 1372     		strb	r3, [r2, #8]
+ 228:Core/Src/Detector/Code/stat.c ****         }
+ 1048              		.loc 1 228 13 view .LVU263
+ 1049 0052 69E0     		b	.L75
+ 1050              	.L77:
+ 233:Core/Src/Detector/Code/stat.c ****         }
+ 234:Core/Src/Detector/Code/stat.c ****     }
+ 235:Core/Src/Detector/Code/stat.c ****     else
+ 236:Core/Src/Detector/Code/stat.c ****     {
+ 237:Core/Src/Detector/Code/stat.c ****         if (reject_1_second) {
+ 1051              		.loc 1 237 9 view .LVU264
+ 1052              		.loc 1 237 13 is_stmt 0 view .LVU265
+ 1053 0054 384B     		ldr	r3, .L93+8
+ 1054 0056 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1055              		.loc 1 237 12 view .LVU266
+ 1056 0058 33B1     		cbz	r3, .L80
+ 238:Core/Src/Detector/Code/stat.c ****             statistic[1].n = 0;
+ 1057              		.loc 1 238 13 is_stmt 1 view .LVU267
+ 1058              		.loc 1 238 28 is_stmt 0 view .LVU268
+ 1059 005a 364B     		ldr	r3, .L93+4
+ 1060 005c 0022     		movs	r2, #0
+ 1061 005e 1A61     		str	r2, [r3, #16]
+ 239:Core/Src/Detector/Code/stat.c ****             statistic[1].t = 0;
+ 1062              		.loc 1 239 13 is_stmt 1 view .LVU269
+ 1063              		.loc 1 239 28 is_stmt 0 view .LVU270
+ 1064 0060 0020     		movs	r0, #0
+ 1065 0062 0021     		movs	r1, #0
+ 1066 0064 C3E90601 		strd	r0, [r3, #24]
+ 1067              	.L80:
+ 240:Core/Src/Detector/Code/stat.c ****         }
+ 241:Core/Src/Detector/Code/stat.c ****         reject_1_second = 0;
+ 1068              		.loc 1 241 9 is_stmt 1 view .LVU271
+ 1069              		.loc 1 241 25 is_stmt 0 view .LVU272
+ 1070 0068 334B     		ldr	r3, .L93+8
+ 1071 006a 0022     		movs	r2, #0
+ 1072 006c 1A70     		strb	r2, [r3]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 27
+
+
+ 1073              	.L79:
+ 242:Core/Src/Detector/Code/stat.c ****     }
+ 243:Core/Src/Detector/Code/stat.c **** 
+ 244:Core/Src/Detector/Code/stat.c ****     tail.n += statistic[1].n;;
+ 1074              		.loc 1 244 5 is_stmt 1 view .LVU273
+ 1075              		.loc 1 244 27 is_stmt 0 view .LVU274
+ 1076 006e 314C     		ldr	r4, .L93+4
+ 1077 0070 2269     		ldr	r2, [r4, #16]
+ 1078              		.loc 1 244 12 view .LVU275
+ 1079 0072 089B     		ldr	r3, [sp, #32]
+ 1080 0074 1344     		add	r3, r3, r2
+ 1081 0076 0893     		str	r3, [sp, #32]
+ 1082              		.loc 1 244 30 is_stmt 1 view .LVU276
+ 245:Core/Src/Detector/Code/stat.c ****     tail.t += statistic[1].t;
+ 1083              		.loc 1 245 5 view .LVU277
+ 1084              		.loc 1 245 27 is_stmt 0 view .LVU278
+ 1085 0078 A169     		ldr	r1, [r4, #24]
+ 1086 007a E269     		ldr	r2, [r4, #28]
+ 1087              		.loc 1 245 12 view .LVU279
+ 1088 007c 0A9B     		ldr	r3, [sp, #40]
+ 1089 007e 5B18     		adds	r3, r3, r1
+ 1090 0080 0B99     		ldr	r1, [sp, #44]
+ 1091 0082 42EB0102 		adc	r2, r2, r1
+ 1092 0086 0A93     		str	r3, [sp, #40]
+ 1093 0088 0B92     		str	r2, [sp, #44]
+ 246:Core/Src/Detector/Code/stat.c **** 
+ 247:Core/Src/Detector/Code/stat.c ****     const stat_elem_t *div_dot = statistic + STAT_COLUMNS;
+ 1094              		.loc 1 247 5 is_stmt 1 view .LVU280
+ 1095              	.LVL70:
+ 248:Core/Src/Detector/Code/stat.c ****     stat_elem_t head = {0U, 0U};
+ 1096              		.loc 1 248 5 view .LVU281
+ 1097              		.loc 1 248 17 is_stmt 0 view .LVU282
+ 1098 008a 0023     		movs	r3, #0
+ 1099 008c 0493     		str	r3, [sp, #16]
+ 1100 008e 0022     		movs	r2, #0
+ 1101 0090 0023     		movs	r3, #0
+ 1102 0092 CDE90623 		strd	r2, [sp, #24]
+ 249:Core/Src/Detector/Code/stat.c ****     unsigned int row = 1U;
+ 1103              		.loc 1 249 5 is_stmt 1 view .LVU283
+ 1104              	.LVL71:
+ 250:Core/Src/Detector/Code/stat.c ****     stat_elem_t tmp;
+ 1105              		.loc 1 250 5 view .LVU284
+ 251:Core/Src/Detector/Code/stat.c **** 
+ 252:Core/Src/Detector/Code/stat.c ****     while (1 < (stat_end - div_dot) && row <= STAT_ROWS)
+ 1106              		.loc 1 252 5 view .LVU285
+ 249:Core/Src/Detector/Code/stat.c ****     stat_elem_t tmp;
+ 1107              		.loc 1 249 18 is_stmt 0 view .LVU286
+ 1108 0096 0125     		movs	r5, #1
+ 247:Core/Src/Detector/Code/stat.c ****     stat_elem_t head = {0U, 0U};
+ 1109              		.loc 1 247 24 view .LVU287
+ 1110 0098 4034     		adds	r4, r4, #64
+ 1111              	.LVL72:
+ 1112              	.L81:
+ 1113              		.loc 1 252 11 is_stmt 1 view .LVU288
+ 1114              		.loc 1 252 26 is_stmt 0 view .LVU289
+ 1115 009a 254B     		ldr	r3, .L93
+ 1116 009c 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 28
+
+
+ 1117 009e 1B1B     		subs	r3, r3, r4
+ 1118              		.loc 1 252 11 view .LVU290
+ 1119 00a0 102B     		cmp	r3, #16
+ 1120 00a2 41DD     		ble	.L75
+ 1121              		.loc 1 252 37 discriminator 1 view .LVU291
+ 1122 00a4 082D     		cmp	r5, #8
+ 1123 00a6 3FD8     		bhi	.L75
+ 253:Core/Src/Detector/Code/stat.c ****     {
+ 254:Core/Src/Detector/Code/stat.c **** 
+ 255:Core/Src/Detector/Code/stat.c ****         sum(&tmp, div_dot - (STAT_COLUMNS - 1U), div_dot);
+ 1124              		.loc 1 255 9 is_stmt 1 view .LVU292
+ 1125 00a8 2246     		mov	r2, r4
+ 1126 00aa A4F13001 		sub	r1, r4, #48
+ 1127 00ae 6846     		mov	r0, sp
+ 1128 00b0 FFF7FEFF 		bl	sum
+ 1129              	.LVL73:
+ 256:Core/Src/Detector/Code/stat.c **** 
+ 257:Core/Src/Detector/Code/stat.c ****         tail.n -= tmp.n + div_dot->n;
+ 1130              		.loc 1 257 9 view .LVU293
+ 1131              		.loc 1 257 22 is_stmt 0 view .LVU294
+ 1132 00b4 009F     		ldr	r7, [sp]
+ 1133              		.loc 1 257 34 view .LVU295
+ 1134 00b6 2368     		ldr	r3, [r4]
+ 1135              		.loc 1 257 25 view .LVU296
+ 1136 00b8 FA18     		adds	r2, r7, r3
+ 1137              		.loc 1 257 16 view .LVU297
+ 1138 00ba 089B     		ldr	r3, [sp, #32]
+ 1139 00bc 9B1A     		subs	r3, r3, r2
+ 1140 00be 0893     		str	r3, [sp, #32]
+ 258:Core/Src/Detector/Code/stat.c ****         tail.t -= tmp.t + div_dot->t;
+ 1141              		.loc 1 258 9 is_stmt 1 view .LVU298
+ 1142              		.loc 1 258 22 is_stmt 0 view .LVU299
+ 1143 00c0 029B     		ldr	r3, [sp, #8]
+ 1144 00c2 0399     		ldr	r1, [sp, #12]
+ 1145              		.loc 1 258 34 view .LVU300
+ 1146 00c4 A268     		ldr	r2, [r4, #8]
+ 1147 00c6 E068     		ldr	r0, [r4, #12]
+ 1148              		.loc 1 258 25 view .LVU301
+ 1149 00c8 9A18     		adds	r2, r3, r2
+ 1150 00ca 41EB0000 		adc	r0, r1, r0
+ 1151              		.loc 1 258 16 view .LVU302
+ 1152 00ce 0A9E     		ldr	r6, [sp, #40]
+ 1153 00d0 B21A     		subs	r2, r6, r2
+ 1154 00d2 0B9E     		ldr	r6, [sp, #44]
+ 1155 00d4 66EB0000 		sbc	r0, r6, r0
+ 1156 00d8 0A92     		str	r2, [sp, #40]
+ 1157 00da 0B90     		str	r0, [sp, #44]
+ 259:Core/Src/Detector/Code/stat.c **** 
+ 260:Core/Src/Detector/Code/stat.c ****         head.n += tmp.n + (div_dot - STAT_COLUMNS)->n;
+ 1158              		.loc 1 260 9 is_stmt 1 view .LVU303
+ 1159              		.loc 1 260 51 is_stmt 0 view .LVU304
+ 1160 00dc 54F8402C 		ldr	r2, [r4, #-64]
+ 1161              		.loc 1 260 25 view .LVU305
+ 1162 00e0 1744     		add	r7, r7, r2
+ 1163              		.loc 1 260 16 view .LVU306
+ 1164 00e2 049A     		ldr	r2, [sp, #16]
+ 1165 00e4 1744     		add	r7, r7, r2
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 29
+
+
+ 1166 00e6 0497     		str	r7, [sp, #16]
+ 261:Core/Src/Detector/Code/stat.c ****         head.t += tmp.t + (div_dot - STAT_COLUMNS)->t;
+ 1167              		.loc 1 261 9 is_stmt 1 view .LVU307
+ 1168              		.loc 1 261 51 is_stmt 0 view .LVU308
+ 1169 00e8 54F8382C 		ldr	r2, [r4, #-56]
+ 1170 00ec 54F8340C 		ldr	r0, [r4, #-52]
+ 1171              		.loc 1 261 25 view .LVU309
+ 1172 00f0 9B18     		adds	r3, r3, r2
+ 1173 00f2 41EB0001 		adc	r1, r1, r0
+ 1174              		.loc 1 261 16 view .LVU310
+ 1175 00f6 069A     		ldr	r2, [sp, #24]
+ 1176 00f8 D318     		adds	r3, r2, r3
+ 1177 00fa 079A     		ldr	r2, [sp, #28]
+ 1178 00fc 41EB0201 		adc	r1, r1, r2
+ 1179 0100 0693     		str	r3, [sp, #24]
+ 1180 0102 0791     		str	r1, [sp, #28]
+ 262:Core/Src/Detector/Code/stat.c **** 
+ 263:Core/Src/Detector/Code/stat.c **** 
+ 264:Core/Src/Detector/Code/stat.c ****         if (need_reject(&head, &tail, k_num)) {
+ 1181              		.loc 1 264 9 is_stmt 1 view .LVU311
+ 1182              		.loc 1 264 13 is_stmt 0 view .LVU312
+ 1183 0104 4246     		mov	r2, r8
+ 1184 0106 08A9     		add	r1, sp, #32
+ 1185 0108 04A8     		add	r0, sp, #16
+ 1186 010a FFF7FEFF 		bl	need_reject
+ 1187              	.LVL74:
+ 1188              		.loc 1 264 12 view .LVU313
+ 1189 010e 10B9     		cbnz	r0, .L92
+ 265:Core/Src/Detector/Code/stat.c ****             stat_end = div_dot;
+ 266:Core/Src/Detector/Code/stat.c **** 
+ 267:Core/Src/Detector/Code/stat.c ****             memset(stat_elem_n + row, 0U, sizeof stat_elem_n - row);
+ 268:Core/Src/Detector/Code/stat.c ****             break;
+ 269:Core/Src/Detector/Code/stat.c ****         }
+ 270:Core/Src/Detector/Code/stat.c **** 
+ 271:Core/Src/Detector/Code/stat.c ****         div_dot += STAT_COLUMNS;
+ 1190              		.loc 1 271 9 is_stmt 1 view .LVU314
+ 1191              		.loc 1 271 17 is_stmt 0 view .LVU315
+ 1192 0110 4034     		adds	r4, r4, #64
+ 1193              	.LVL75:
+ 272:Core/Src/Detector/Code/stat.c ****         row += 1U;
+ 1194              		.loc 1 272 9 is_stmt 1 view .LVU316
+ 1195              		.loc 1 272 13 is_stmt 0 view .LVU317
+ 1196 0112 0135     		adds	r5, r5, #1
+ 1197              	.LVL76:
+ 1198              		.loc 1 272 13 view .LVU318
+ 1199 0114 C1E7     		b	.L81
+ 1200              	.L92:
+ 265:Core/Src/Detector/Code/stat.c ****             stat_end = div_dot;
+ 1201              		.loc 1 265 13 is_stmt 1 view .LVU319
+ 265:Core/Src/Detector/Code/stat.c ****             stat_end = div_dot;
+ 1202              		.loc 1 265 22 is_stmt 0 view .LVU320
+ 1203 0116 064B     		ldr	r3, .L93
+ 1204 0118 1C60     		str	r4, [r3]
+ 267:Core/Src/Detector/Code/stat.c ****             break;
+ 1205              		.loc 1 267 13 is_stmt 1 view .LVU321
+ 1206 011a C5F10902 		rsb	r2, r5, #9
+ 1207 011e 0021     		movs	r1, #0
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 30
+
+
+ 1208 0120 0648     		ldr	r0, .L93+12
+ 1209 0122 2844     		add	r0, r0, r5
+ 1210 0124 FFF7FEFF 		bl	memset
+ 1211              	.LVL77:
+ 268:Core/Src/Detector/Code/stat.c ****         }
+ 1212              		.loc 1 268 13 view .LVU322
+ 1213              	.L75:
+ 273:Core/Src/Detector/Code/stat.c ****     }
+ 274:Core/Src/Detector/Code/stat.c **** 
+ 275:Core/Src/Detector/Code/stat.c ****     
+ 276:Core/Src/Detector/Code/stat.c **** 
+ 277:Core/Src/Detector/Code/stat.c **** }
+ 1214              		.loc 1 277 1 is_stmt 0 view .LVU323
+ 1215 0128 0CB0     		add	sp, sp, #48
+ 1216              	.LCFI20:
+ 1217              		.cfi_def_cfa_offset 24
+ 1218              		@ sp needed
+ 1219 012a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 1220              	.LVL78:
+ 1221              	.L94:
+ 1222              		.loc 1 277 1 view .LVU324
+ 1223 012e 00BF     		.align	2
+ 1224              	.L93:
+ 1225 0130 00000000 		.word	.LANCHOR2
+ 1226 0134 00000000 		.word	.LANCHOR3
+ 1227 0138 00000000 		.word	.LANCHOR6
+ 1228 013c 00000000 		.word	.LANCHOR4
+ 1229              		.cfi_endproc
+ 1230              	.LFE13:
+ 1232              		.global	__aeabi_ul2d
+ 1233              		.global	__aeabi_dmul
+ 1234              		.global	__aeabi_dcmpgt
+ 1235              		.global	__aeabi_ui2d
+ 1236              		.global	__aeabi_ddiv
+ 1237              		.global	__aeabi_d2f
+ 1238              		.global	__aeabi_f2d
+ 1239              		.section	.text.stat_calc_cps,"ax",%progbits
+ 1240              		.align	1
+ 1241              		.global	stat_calc_cps
+ 1242              		.syntax unified
+ 1243              		.thumb
+ 1244              		.thumb_func
+ 1245              		.fpu fpv4-sp-d16
+ 1247              	stat_calc_cps:
+ 1248              	.LVL79:
+ 1249              	.LFB14:
+ 278:Core/Src/Detector/Code/stat.c **** 
+ 279:Core/Src/Detector/Code/stat.c **** 
+ 280:Core/Src/Detector/Code/stat.c **** void stat_calc_cps (float *cps, uint8_t* delta) {
+ 1250              		.loc 1 280 49 is_stmt 1 view -0
+ 1251              		.cfi_startproc
+ 1252              		@ args = 0, pretend = 0, frame = 24
+ 1253              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1254              		.loc 1 280 49 is_stmt 0 view .LVU326
+ 1255 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 1256              	.LCFI21:
+ 1257              		.cfi_def_cfa_offset 28
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 31
+
+
+ 1258              		.cfi_offset 4, -28
+ 1259              		.cfi_offset 5, -24
+ 1260              		.cfi_offset 6, -20
+ 1261              		.cfi_offset 7, -16
+ 1262              		.cfi_offset 8, -12
+ 1263              		.cfi_offset 9, -8
+ 1264              		.cfi_offset 14, -4
+ 1265 0004 87B0     		sub	sp, sp, #28
+ 1266              	.LCFI22:
+ 1267              		.cfi_def_cfa_offset 56
+ 1268 0006 0746     		mov	r7, r0
+ 1269 0008 0E46     		mov	r6, r1
+ 281:Core/Src/Detector/Code/stat.c **** 
+ 282:Core/Src/Detector/Code/stat.c ****     stat_elem_t all;
+ 1270              		.loc 1 282 5 is_stmt 1 view .LVU327
+ 283:Core/Src/Detector/Code/stat.c ****     static double Time,CPS;
+ 1271              		.loc 1 283 5 view .LVU328
+ 284:Core/Src/Detector/Code/stat.c ****     static uint8_t Delta;
+ 1272              		.loc 1 284 5 view .LVU329
+ 285:Core/Src/Detector/Code/stat.c **** 
+ 286:Core/Src/Detector/Code/stat.c **** 
+ 287:Core/Src/Detector/Code/stat.c ****     if (statistic[0].n < 60) {
+ 1273              		.loc 1 287 5 view .LVU330
+ 1274              		.loc 1 287 21 is_stmt 0 view .LVU331
+ 1275 000a 3F4B     		ldr	r3, .L104+8
+ 1276 000c 1B68     		ldr	r3, [r3]
+ 1277              		.loc 1 287 8 view .LVU332
+ 1278 000e 3B2B     		cmp	r3, #59
+ 1279 0010 4CD8     		bhi	.L96
+ 288:Core/Src/Detector/Code/stat.c ****         sum(&all, statistic, stat_end);
+ 1280              		.loc 1 288 9 is_stmt 1 view .LVU333
+ 1281 0012 3E4B     		ldr	r3, .L104+12
+ 1282 0014 1A68     		ldr	r2, [r3]
+ 1283 0016 3C49     		ldr	r1, .L104+8
+ 1284              	.LVL80:
+ 1285              		.loc 1 288 9 is_stmt 0 view .LVU334
+ 1286 0018 02A8     		add	r0, sp, #8
+ 1287              	.LVL81:
+ 1288              		.loc 1 288 9 view .LVU335
+ 1289 001a FFF7FEFF 		bl	sum
+ 1290              	.LVL82:
+ 1291              	.L97:
+ 289:Core/Src/Detector/Code/stat.c ****     } else {
+ 290:Core/Src/Detector/Code/stat.c ****         const stat_elem_t *last = statistic + STAT_COLUMNS * 4;
+ 291:Core/Src/Detector/Code/stat.c ****         sum(&all, statistic, (stat_end > last ? last : stat_end));
+ 292:Core/Src/Detector/Code/stat.c ****     }
+ 293:Core/Src/Detector/Code/stat.c **** 
+ 294:Core/Src/Detector/Code/stat.c **** 
+ 295:Core/Src/Detector/Code/stat.c ****     Time = (double)all.t;
+ 1292              		.loc 1 295 5 is_stmt 1 view .LVU336
+ 1293              		.loc 1 295 12 is_stmt 0 view .LVU337
+ 1294 001e DDE90401 		ldrd	r0, [sp, #16]
+ 1295 0022 FFF7FEFF 		bl	__aeabi_ul2d
+ 1296              	.LVL83:
+ 1297 0026 0246     		mov	r2, r0
+ 1298 0028 0B46     		mov	r3, r1
+ 1299              		.loc 1 295 10 view .LVU338
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 32
+
+
+ 1300 002a DFF8F080 		ldr	r8, .L104+28
+ 1301 002e C8E90023 		strd	r2, [r8]
+ 296:Core/Src/Detector/Code/stat.c ****     Time*= kTime;
+ 1302              		.loc 1 296 5 is_stmt 1 view .LVU339
+ 1303              		.loc 1 296 9 is_stmt 0 view .LVU340
+ 1304 0032 33A3     		adr	r3, .L104
+ 1305 0034 D3E90023 		ldrd	r2, [r3]
+ 1306 0038 FFF7FEFF 		bl	__aeabi_dmul
+ 1307              	.LVL84:
+ 1308 003c 0446     		mov	r4, r0
+ 1309 003e 0D46     		mov	r5, r1
+ 1310 0040 C8E90045 		strd	r4, [r8]
+ 297:Core/Src/Detector/Code/stat.c **** 
+ 298:Core/Src/Detector/Code/stat.c ****     CPS = 0; Delta=99;
+ 1311              		.loc 1 298 5 is_stmt 1 view .LVU341
+ 1312              		.loc 1 298 9 is_stmt 0 view .LVU342
+ 1313 0044 0022     		movs	r2, #0
+ 1314 0046 0023     		movs	r3, #0
+ 1315 0048 DFF8CCC0 		ldr	ip, .L104+24
+ 1316 004c CCE90023 		strd	r2, [ip]
+ 1317              		.loc 1 298 14 is_stmt 1 view .LVU343
+ 1318              		.loc 1 298 19 is_stmt 0 view .LVU344
+ 1319 0050 DFF8C0C0 		ldr	ip, .L104+20
+ 1320 0054 4FF0630E 		mov	lr, #99
+ 1321 0058 8CF800E0 		strb	lr, [ip]
+ 299:Core/Src/Detector/Code/stat.c **** 
+ 300:Core/Src/Detector/Code/stat.c **** 
+ 301:Core/Src/Detector/Code/stat.c ****     if (Time>0) {
+ 1322              		.loc 1 301 5 is_stmt 1 view .LVU345
+ 1323              		.loc 1 301 8 is_stmt 0 view .LVU346
+ 1324 005c FFF7FEFF 		bl	__aeabi_dcmpgt
+ 1325              	.LVL85:
+ 1326 0060 98B3     		cbz	r0, .L98
+ 302:Core/Src/Detector/Code/stat.c ****         CPS   = (double)all.n;
+ 1327              		.loc 1 302 9 is_stmt 1 view .LVU347
+ 1328              		.loc 1 302 28 is_stmt 0 view .LVU348
+ 1329 0062 DDF80880 		ldr	r8, [sp, #8]
+ 1330              		.loc 1 302 17 view .LVU349
+ 1331 0066 4046     		mov	r0, r8
+ 1332 0068 FFF7FEFF 		bl	__aeabi_ui2d
+ 1333              	.LVL86:
+ 1334 006c 0246     		mov	r2, r0
+ 1335 006e 0B46     		mov	r3, r1
+ 1336              		.loc 1 302 15 view .LVU350
+ 1337 0070 DFF8A490 		ldr	r9, .L104+24
+ 1338 0074 C9E90023 		strd	r2, [r9]
+ 303:Core/Src/Detector/Code/stat.c ****         CPS  /= Time;
+ 1339              		.loc 1 303 9 is_stmt 1 view .LVU351
+ 1340              		.loc 1 303 14 is_stmt 0 view .LVU352
+ 1341 0078 2246     		mov	r2, r4
+ 1342 007a 2B46     		mov	r3, r5
+ 1343 007c FFF7FEFF 		bl	__aeabi_ddiv
+ 1344              	.LVL87:
+ 1345 0080 C9E90001 		strd	r0, [r9]
+ 304:Core/Src/Detector/Code/stat.c ****         Delta = (all.n>4) ? (200/fsqrt(all.n)) : 99;
+ 1346              		.loc 1 304 9 is_stmt 1 view .LVU353
+ 1347              		.loc 1 304 15 is_stmt 0 view .LVU354
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 33
+
+
+ 1348 0084 B8F1040F 		cmp	r8, #4
+ 1349 0088 1CD9     		bls	.L101
+ 1350              		.loc 1 304 34 discriminator 1 view .LVU355
+ 1351 008a 07EE908A 		vmov	s15, r8	@ int
+ 1352 008e B8EE670A 		vcvt.f32.u32	s0, s15
+ 1353 0092 FFF7FEFF 		bl	fsqrt
+ 1354              	.LVL88:
+ 1355              		.loc 1 304 33 discriminator 1 view .LVU356
+ 1356 0096 9FED1E7A 		vldr.32	s14, .L104+16
+ 1357 009a C7EE007A 		vdiv.f32	s15, s14, s0
+ 1358              		.loc 1 304 15 discriminator 1 view .LVU357
+ 1359 009e FCEEE77A 		vcvt.u32.f32	s15, s15
+ 1360 00a2 CDED017A 		vstr.32	s15, [sp, #4]	@ int
+ 1361 00a6 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 1362 00aa 0CE0     		b	.L100
+ 1363              	.LVL89:
+ 1364              	.L96:
+ 1365              	.LBB16:
+ 290:Core/Src/Detector/Code/stat.c ****         sum(&all, statistic, (stat_end > last ? last : stat_end));
+ 1366              		.loc 1 290 9 is_stmt 1 view .LVU358
+ 291:Core/Src/Detector/Code/stat.c ****     }
+ 1367              		.loc 1 291 9 view .LVU359
+ 1368 00ac 1649     		ldr	r1, .L104+8
+ 1369              	.LVL90:
+ 291:Core/Src/Detector/Code/stat.c ****     }
+ 1370              		.loc 1 291 9 is_stmt 0 view .LVU360
+ 1371 00ae 01F58073 		add	r3, r1, #256
+ 1372 00b2 164A     		ldr	r2, .L104+12
+ 1373 00b4 1268     		ldr	r2, [r2]
+ 1374 00b6 9A42     		cmp	r2, r3
+ 1375 00b8 28BF     		it	cs
+ 1376 00ba 1A46     		movcs	r2, r3
+ 1377 00bc 02A8     		add	r0, sp, #8
+ 1378              	.LVL91:
+ 291:Core/Src/Detector/Code/stat.c ****     }
+ 1379              		.loc 1 291 9 view .LVU361
+ 1380 00be FFF7FEFF 		bl	sum
+ 1381              	.LVL92:
+ 1382 00c2 ACE7     		b	.L97
+ 1383              	.LVL93:
+ 1384              	.L101:
+ 291:Core/Src/Detector/Code/stat.c ****     }
+ 1385              		.loc 1 291 9 view .LVU362
+ 1386              	.LBE16:
+ 1387              		.loc 1 304 15 view .LVU363
+ 1388 00c4 6323     		movs	r3, #99
+ 1389              	.L100:
+ 1390              		.loc 1 304 15 discriminator 4 view .LVU364
+ 1391 00c6 134A     		ldr	r2, .L104+20
+ 1392 00c8 1370     		strb	r3, [r2]
+ 1393              	.L98:
+ 305:Core/Src/Detector/Code/stat.c ****     }
+ 306:Core/Src/Detector/Code/stat.c **** 
+ 307:Core/Src/Detector/Code/stat.c ****     // OUT
+ 308:Core/Src/Detector/Code/stat.c ****      CPS=Get_Tau_CPS(CPS);
+ 1394              		.loc 1 308 6 is_stmt 1 view .LVU365
+ 1395              		.loc 1 308 10 is_stmt 0 view .LVU366
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 34
+
+
+ 1396 00ca 134D     		ldr	r5, .L104+24
+ 1397 00cc D5E90001 		ldrd	r0, [r5]
+ 1398 00d0 FFF7FEFF 		bl	__aeabi_d2f
+ 1399              	.LVL94:
+ 1400 00d4 00EE100A 		vmov	s0, r0
+ 1401 00d8 FFF7FEFF 		bl	Get_Tau_CPS
+ 1402              	.LVL95:
+ 1403 00dc 10EE104A 		vmov	r4, s0
+ 1404 00e0 10EE100A 		vmov	r0, s0
+ 1405 00e4 FFF7FEFF 		bl	__aeabi_f2d
+ 1406              	.LVL96:
+ 1407              		.loc 1 308 9 view .LVU367
+ 1408 00e8 C5E90001 		strd	r0, [r5]
+ 309:Core/Src/Detector/Code/stat.c ****     *cps  = (float)CPS;
+ 1409              		.loc 1 309 5 is_stmt 1 view .LVU368
+ 1410              		.loc 1 309 11 is_stmt 0 view .LVU369
+ 1411 00ec 3C60     		str	r4, [r7]	@ float
+ 310:Core/Src/Detector/Code/stat.c ****     *delta= Delta;
+ 1412              		.loc 1 310 5 is_stmt 1 view .LVU370
+ 1413              		.loc 1 310 11 is_stmt 0 view .LVU371
+ 1414 00ee 094B     		ldr	r3, .L104+20
+ 1415 00f0 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1416 00f2 3370     		strb	r3, [r6]
+ 311:Core/Src/Detector/Code/stat.c **** }
+ 1417              		.loc 1 311 1 view .LVU372
+ 1418 00f4 07B0     		add	sp, sp, #28
+ 1419              	.LCFI23:
+ 1420              		.cfi_def_cfa_offset 28
+ 1421              		@ sp needed
+ 1422 00f6 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 1423              	.LVL97:
+ 1424              	.L105:
+ 1425              		.loc 1 311 1 view .LVU373
+ 1426 00fa 00BFAFF3 		.align	3
+ 1426      0080
+ 1427              	.L104:
+ 1428 0100 000000E0 		.word	-536870912
+ 1429 0104 E236EA3E 		.word	1055536866
+ 1430 0108 00000000 		.word	.LANCHOR3
+ 1431 010c 00000000 		.word	.LANCHOR2
+ 1432 0110 00004843 		.word	1128792064
+ 1433 0114 00000000 		.word	.LANCHOR9
+ 1434 0118 00000000 		.word	.LANCHOR8
+ 1435 011c 00000000 		.word	.LANCHOR7
+ 1436              		.cfi_endproc
+ 1437              	.LFE14:
+ 1439              		.section	.bss.CPS.1,"aw",%nobits
+ 1440              		.align	3
+ 1441              		.set	.LANCHOR8,. + 0
+ 1444              	CPS.1:
+ 1445 0000 00000000 		.space	8
+ 1445      00000000 
+ 1446              		.section	.bss.Delta.0,"aw",%nobits
+ 1447              		.set	.LANCHOR9,. + 0
+ 1450              	Delta.0:
+ 1451 0000 00       		.space	1
+ 1452              		.section	.bss.Time.2,"aw",%nobits
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 35
+
+
+ 1453              		.align	3
+ 1454              		.set	.LANCHOR7,. + 0
+ 1457              	Time.2:
+ 1458 0000 00000000 		.space	8
+ 1458      00000000 
+ 1459              		.section	.bss.reject_1_second,"aw",%nobits
+ 1460              		.set	.LANCHOR6,. + 0
+ 1463              	reject_1_second:
+ 1464 0000 00       		.space	1
+ 1465              		.section	.bss.stat_elem_n,"aw",%nobits
+ 1466              		.align	2
+ 1467              		.set	.LANCHOR4,. + 0
+ 1470              	stat_elem_n:
+ 1471 0000 00000000 		.space	9
+ 1471      00000000 
+ 1471      00
+ 1472              		.section	.bss.statistic,"aw",%nobits
+ 1473              		.align	3
+ 1474              		.set	.LANCHOR3,. + 0
+ 1477              	statistic:
+ 1478 0000 00000000 		.space	640
+ 1478      00000000 
+ 1478      00000000 
+ 1478      00000000 
+ 1478      00000000 
+ 1479              		.section	.bss.tau,"aw",%nobits
+ 1480              		.align	2
+ 1481              		.set	.LANCHOR0,. + 0
+ 1484              	tau:
+ 1485 0000 00000000 		.space	4
+ 1486              		.section	.bss.tau_1x,"aw",%nobits
+ 1487              		.align	2
+ 1488              		.set	.LANCHOR1,. + 0
+ 1491              	tau_1x:
+ 1492 0000 00000000 		.space	4
+ 1493              		.section	.data.stat_end,"aw"
+ 1494              		.align	2
+ 1495              		.set	.LANCHOR2,. + 0
+ 1498              	stat_end:
+ 1499 0000 00000000 		.word	statistic
+ 1500              		.section	.rodata.k,"a"
+ 1501              		.align	2
+ 1502              		.set	.LANCHOR5,. + 0
+ 1505              	k:
+ 1506 0000 06050504 		.ascii	"\006\005\005\004\004\004\004\004"
+ 1506      04040404 
+ 1507 0008 02       		.byte	2
+ 1508 0009 07060505 		.ascii	"\007\006\005\005\004\004\004\004"
+ 1508      04040404 
+ 1509 0011 03       		.byte	3
+ 1510 0012 08070605 		.ascii	"\010\007\006\005\004\004\004\004"
+ 1510      04040404 
+ 1511 001a 03       		.byte	3
+ 1512 001b 09080706 		.ascii	"\011\010\007\006\005\004\004\004"
+ 1512      05040404 
+ 1513 0023 04       		.byte	4
+ 1514 0024 09080706 		.ascii	"\011\010\007\006\005\004\004\004"
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 36
+
+
+ 1514      05040404 
+ 1515 002c 04       		.byte	4
+ 1516 002d 0A090807 		.ascii	"\012\011\010\007\006\005\005\005"
+ 1516      06050505 
+ 1517 0035 05       		.byte	5
+ 1518              		.text
+ 1519              	.Letext0:
+ 1520              		.file 2 "c:\\users\\user\\appdata\\roaming\\code\\user\\globalstorage\\bmd.stm32-for-vscode\\@xpac
+ 1521              		.file 3 "c:\\users\\user\\appdata\\roaming\\code\\user\\globalstorage\\bmd.stm32-for-vscode\\@xpac
+ 1522              		.file 4 "Core/Src/Detector/Code/stat.h"
+ 1523              		.file 5 "<built-in>"
+ 1524              		.file 6 "c:\\users\\user\\appdata\\roaming\\code\\user\\globalstorage\\bmd.stm32-for-vscode\\@xpac
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 37
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stat.c
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:18     .text.sum:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:25     .text.sum:0000000000000000 sum
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:93     .text.sum:0000000000000038 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:99     .text.stat_SetDeatTime:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:106    .text.stat_SetDeatTime:0000000000000000 stat_SetDeatTime
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:142    .text.stat_SetDeatTime:0000000000000028 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:148    .text.Get_Tau_CPS:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:155    .text.Get_Tau_CPS:0000000000000000 Get_Tau_CPS
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:208    .text.Get_Tau_CPS:0000000000000038 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:214    .text.stat_reset:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:221    .text.stat_reset:0000000000000000 stat_reset
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:244    .text.stat_reset:0000000000000014 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:251    .text.stat_accumulate:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:258    .text.stat_accumulate:0000000000000000 stat_accumulate
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:324    .text.stat_accumulate:0000000000000038 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:330    .text.stat_add:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:337    .text.stat_add:0000000000000000 stat_add
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:561    .text.stat_add:0000000000000108 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:569    .text.fsqrt:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:576    .text.fsqrt:0000000000000000 fsqrt
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:614    .text.fsqrt:0000000000000024 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:620    .text.border_low_tpc:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:626    .text.border_low_tpc:0000000000000000 border_low_tpc
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:732    .text.border_low_tpc:0000000000000064 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:738    .text.need_reject:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:744    .text.need_reject:0000000000000000 need_reject
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:958    .text.need_reject:00000000000000ec $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:963    .text.stat_check:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:970    .text.stat_check:0000000000000000 stat_check
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1225   .text.stat_check:0000000000000130 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1240   .text.stat_calc_cps:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1247   .text.stat_calc_cps:0000000000000000 stat_calc_cps
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1428   .text.stat_calc_cps:0000000000000100 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1440   .bss.CPS.1:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1444   .bss.CPS.1:0000000000000000 CPS.1
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1450   .bss.Delta.0:0000000000000000 Delta.0
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1451   .bss.Delta.0:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1453   .bss.Time.2:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1457   .bss.Time.2:0000000000000000 Time.2
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1463   .bss.reject_1_second:0000000000000000 reject_1_second
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1464   .bss.reject_1_second:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1466   .bss.stat_elem_n:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1470   .bss.stat_elem_n:0000000000000000 stat_elem_n
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1473   .bss.statistic:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1477   .bss.statistic:0000000000000000 statistic
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1480   .bss.tau:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1484   .bss.tau:0000000000000000 tau
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1487   .bss.tau_1x:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1491   .bss.tau_1x:0000000000000000 tau_1x
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1494   .data.stat_end:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1498   .data.stat_end:0000000000000000 stat_end
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1501   .rodata.k:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccdD195I.s:1505   .rodata.k:0000000000000000 k
+
+UNDEFINED SYMBOLS
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccdD195I.s 			page 38
+
+
+memmove
+__aeabi_ul2f
+memset
+__aeabi_ul2d
+__aeabi_dmul
+__aeabi_dcmpgt
+__aeabi_ui2d
+__aeabi_ddiv
+__aeabi_d2f
+__aeabi_f2d

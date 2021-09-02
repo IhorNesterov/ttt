@@ -1,0 +1,1871 @@
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"FindX.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.ssqrt,"ax",%progbits
+  18              		.align	1
+  19              		.global	ssqrt
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	ssqrt:
+  27              	.LVL0:
+  28              	.LFB0:
+  29              		.file 1 "Core/Src/Detector/Code/FindX.c"
+   1:Core/Src/Detector/Code/FindX.c **** #include "FindX.h"
+   2:Core/Src/Detector/Code/FindX.c **** 
+   3:Core/Src/Detector/Code/FindX.c **** //****************************************************************************//
+   4:Core/Src/Detector/Code/FindX.c **** //  22/07/21 Find Window5
+   5:Core/Src/Detector/Code/FindX.c **** //  Putyrski Mikhail
+   6:Core/Src/Detector/Code/FindX.c **** //****************************************************************************//
+   7:Core/Src/Detector/Code/FindX.c **** 
+   8:Core/Src/Detector/Code/FindX.c **** static float Find_Sigma;
+   9:Core/Src/Detector/Code/FindX.c **** static uint16_t TFW5_Tcall;
+  10:Core/Src/Detector/Code/FindX.c **** 
+  11:Core/Src/Detector/Code/FindX.c **** // Time Mask
+  12:Core/Src/Detector/Code/FindX.c **** //const unsigned int iMaskFind = 0x0088;
+  13:Core/Src/Detector/Code/FindX.c **** const unsigned int iMaskFind = 0xFFFF;
+  14:Core/Src/Detector/Code/FindX.c **** 
+  15:Core/Src/Detector/Code/FindX.c **** const float Kst[121] = {
+  16:Core/Src/Detector/Code/FindX.c ****               12.7062	,
+  17:Core/Src/Detector/Code/FindX.c ****               4.3027	,
+  18:Core/Src/Detector/Code/FindX.c ****               3.1824	,
+  19:Core/Src/Detector/Code/FindX.c ****               2.7764	,
+  20:Core/Src/Detector/Code/FindX.c ****               2.5706	,
+  21:Core/Src/Detector/Code/FindX.c ****               2.4469	,
+  22:Core/Src/Detector/Code/FindX.c ****               2.3646	,
+  23:Core/Src/Detector/Code/FindX.c ****               2.306	,
+  24:Core/Src/Detector/Code/FindX.c ****               2.2622	,
+  25:Core/Src/Detector/Code/FindX.c ****               2.2281	,
+  26:Core/Src/Detector/Code/FindX.c ****               2.201	,
+  27:Core/Src/Detector/Code/FindX.c ****               2.1788	,
+  28:Core/Src/Detector/Code/FindX.c ****               2.1604	,
+  29:Core/Src/Detector/Code/FindX.c ****               2.1448	,
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 2
+
+
+  30:Core/Src/Detector/Code/FindX.c ****               2.1314	,
+  31:Core/Src/Detector/Code/FindX.c ****               2.1199	,
+  32:Core/Src/Detector/Code/FindX.c ****               2.1098	,
+  33:Core/Src/Detector/Code/FindX.c ****               2.1009	,
+  34:Core/Src/Detector/Code/FindX.c ****               2.093	,
+  35:Core/Src/Detector/Code/FindX.c ****               2.086	,
+  36:Core/Src/Detector/Code/FindX.c ****               2.0796	,
+  37:Core/Src/Detector/Code/FindX.c ****               2.0739	,
+  38:Core/Src/Detector/Code/FindX.c ****               2.0687	,
+  39:Core/Src/Detector/Code/FindX.c ****               2.0639	,
+  40:Core/Src/Detector/Code/FindX.c ****               2.0595	,
+  41:Core/Src/Detector/Code/FindX.c ****               2.0555	,
+  42:Core/Src/Detector/Code/FindX.c ****               2.0518	,
+  43:Core/Src/Detector/Code/FindX.c ****               2.0484	,
+  44:Core/Src/Detector/Code/FindX.c ****               2.0452	,
+  45:Core/Src/Detector/Code/FindX.c ****               2.0423	,
+  46:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  47:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  48:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  49:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  50:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  51:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  52:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  53:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  54:Core/Src/Detector/Code/FindX.c ****               2.0301	,
+  55:Core/Src/Detector/Code/FindX.c ****               2.0211	,
+  56:Core/Src/Detector/Code/FindX.c ****               2.0211	,
+  57:Core/Src/Detector/Code/FindX.c ****               2.0211	,
+  58:Core/Src/Detector/Code/FindX.c ****               2.0211	,
+  59:Core/Src/Detector/Code/FindX.c ****               2.0211	,
+  60:Core/Src/Detector/Code/FindX.c ****               2.0141	,
+  61:Core/Src/Detector/Code/FindX.c ****               2.0141	,
+  62:Core/Src/Detector/Code/FindX.c ****               2.0141	,
+  63:Core/Src/Detector/Code/FindX.c ****               2.0141	,
+  64:Core/Src/Detector/Code/FindX.c ****               2.0141	,
+  65:Core/Src/Detector/Code/FindX.c ****               2.0086	,
+  66:Core/Src/Detector/Code/FindX.c ****               2.0086	,
+  67:Core/Src/Detector/Code/FindX.c ****               2.0086	,
+  68:Core/Src/Detector/Code/FindX.c ****               2.0086	,
+  69:Core/Src/Detector/Code/FindX.c ****               2.0086	,
+  70:Core/Src/Detector/Code/FindX.c ****               2.004	,
+  71:Core/Src/Detector/Code/FindX.c ****               2.004	,
+  72:Core/Src/Detector/Code/FindX.c ****               2.004	,
+  73:Core/Src/Detector/Code/FindX.c ****               2.004	,
+  74:Core/Src/Detector/Code/FindX.c ****               2.004	,
+  75:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  76:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  77:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  78:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  79:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  80:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  81:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  82:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  83:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  84:Core/Src/Detector/Code/FindX.c ****               2.0003	,
+  85:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  86:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 3
+
+
+  87:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  88:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  89:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  90:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  91:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  92:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  93:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  94:Core/Src/Detector/Code/FindX.c ****               1.9944	,
+  95:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+  96:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+  97:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+  98:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+  99:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+ 100:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+ 101:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+ 102:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+ 103:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+ 104:Core/Src/Detector/Code/FindX.c ****               1.9901	,
+ 105:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 106:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 107:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 108:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 109:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 110:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 111:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 112:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 113:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 114:Core/Src/Detector/Code/FindX.c ****               1.9867	,
+ 115:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 116:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 117:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 118:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 119:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 120:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 121:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 122:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 123:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 124:Core/Src/Detector/Code/FindX.c ****               1.984	,
+ 125:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 126:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 127:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 128:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 129:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 130:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 131:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 132:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 133:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 134:Core/Src/Detector/Code/FindX.c ****               1.9818	,
+ 135:Core/Src/Detector/Code/FindX.c ****               1.9799	,
+ 136:Core/Src/Detector/Code/FindX.c ****               1	
+ 137:Core/Src/Detector/Code/FindX.c **** };
+ 138:Core/Src/Detector/Code/FindX.c **** 
+ 139:Core/Src/Detector/Code/FindX.c **** 
+ 140:Core/Src/Detector/Code/FindX.c **** 
+ 141:Core/Src/Detector/Code/FindX.c **** //****************************************************************************//
+ 142:Core/Src/Detector/Code/FindX.c **** 
+ 143:Core/Src/Detector/Code/FindX.c **** TFW5Data FW5Data;
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 4
+
+
+ 144:Core/Src/Detector/Code/FindX.c **** uint16_t  _out;
+ 145:Core/Src/Detector/Code/FindX.c **** void FW5_CalculatePorog_i(float dt, float nSigma, float nFona_cps, float TCAL_sec);
+ 146:Core/Src/Detector/Code/FindX.c **** void FW5_SetPorog(float nSigm, uint16_t Tcall);
+ 147:Core/Src/Detector/Code/FindX.c **** 
+ 148:Core/Src/Detector/Code/FindX.c **** //****************************************************************************//
+ 149:Core/Src/Detector/Code/FindX.c **** 
+ 150:Core/Src/Detector/Code/FindX.c **** float ssqrt(float z) {
+  30              		.loc 1 150 22 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+ 151:Core/Src/Detector/Code/FindX.c ****  if (z==0) return 0;
+  35              		.loc 1 151 2 view .LVU1
+  36              		.loc 1 151 5 is_stmt 0 view .LVU2
+  37 0000 B5EE400A 		vcmp.f32	s0, #0
+  38 0004 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  39 0008 09D0     		beq	.L3
+ 152:Core/Src/Detector/Code/FindX.c ****  union {float f; uint32_t i; } val = {z};
+  40              		.loc 1 152 2 is_stmt 1 view .LVU3
+ 153:Core/Src/Detector/Code/FindX.c ****  val.i -= 8388608;
+  41              		.loc 1 153 2 view .LVU4
+  42              		.loc 1 153 8 is_stmt 0 view .LVU5
+  43 000a 10EE103A 		vmov	r3, s0	@ int
+  44 000e A3F50003 		sub	r3, r3, #8388608
+ 154:Core/Src/Detector/Code/FindX.c ****  val.i >>= 1;
+  45              		.loc 1 154 2 is_stmt 1 view .LVU6
+  46              		.loc 1 154 8 is_stmt 0 view .LVU7
+  47 0012 5B08     		lsrs	r3, r3, #1
+ 155:Core/Src/Detector/Code/FindX.c ****  val.i += 536870912;
+  48              		.loc 1 155 2 is_stmt 1 view .LVU8
+ 156:Core/Src/Detector/Code/FindX.c ****  return val.f;
+  49              		.loc 1 156 2 view .LVU9
+  50 0014 03F10053 		add	r3, r3, #536870912
+  51 0018 00EE103A 		vmov	s0, r3	@ int
+  52              	.LVL1:
+  53              		.loc 1 156 12 is_stmt 0 view .LVU10
+  54 001c 7047     		bx	lr
+  55              	.LVL2:
+  56              	.L3:
+ 151:Core/Src/Detector/Code/FindX.c ****  union {float f; uint32_t i; } val = {z};
+  57              		.loc 1 151 19 view .LVU11
+  58 001e 9FED010A 		vldr.32	s0, .L4
+  59              	.LVL3:
+ 157:Core/Src/Detector/Code/FindX.c **** }
+  60              		.loc 1 157 1 view .LVU12
+  61 0022 7047     		bx	lr
+  62              	.L5:
+  63              		.align	2
+  64              	.L4:
+  65 0024 00000000 		.word	0
+  66              		.cfi_endproc
+  67              	.LFE0:
+  69              		.section	.text.FW5_Write,"ax",%progbits
+  70              		.align	1
+  71              		.global	FW5_Write
+  72              		.syntax unified
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 5
+
+
+  73              		.thumb
+  74              		.thumb_func
+  75              		.fpu fpv4-sp-d16
+  77              	FW5_Write:
+  78              	.LVL4:
+  79              	.LFB1:
+ 158:Core/Src/Detector/Code/FindX.c **** 
+ 159:Core/Src/Detector/Code/FindX.c **** // Write Buff
+ 160:Core/Src/Detector/Code/FindX.c **** void FW5_Write(uint32_t D) {
+  80              		.loc 1 160 28 is_stmt 1 view -0
+  81              		.cfi_startproc
+  82              		@ args = 0, pretend = 0, frame = 0
+  83              		@ frame_needed = 0, uses_anonymous_args = 0
+  84              		@ link register save eliminated.
+ 161:Core/Src/Detector/Code/FindX.c ****   FW5Data.CountWindow+=D;
+  85              		.loc 1 161 3 view .LVU14
+  86              		.loc 1 161 22 is_stmt 0 view .LVU15
+  87 0000 024A     		ldr	r2, .L7
+  88 0002 5368     		ldr	r3, [r2, #4]
+  89 0004 0344     		add	r3, r3, r0
+  90 0006 5360     		str	r3, [r2, #4]
+ 162:Core/Src/Detector/Code/FindX.c **** }
+  91              		.loc 1 162 1 view .LVU16
+  92 0008 7047     		bx	lr
+  93              	.L8:
+  94 000a 00BF     		.align	2
+  95              	.L7:
+  96 000c 00000000 		.word	.LANCHOR0
+  97              		.cfi_endproc
+  98              	.LFE1:
+ 100              		.section	.text.FW5_SetPorog,"ax",%progbits
+ 101              		.align	1
+ 102              		.global	FW5_SetPorog
+ 103              		.syntax unified
+ 104              		.thumb
+ 105              		.thumb_func
+ 106              		.fpu fpv4-sp-d16
+ 108              	FW5_SetPorog:
+ 109              	.LVL5:
+ 110              	.LFB2:
+ 163:Core/Src/Detector/Code/FindX.c **** 
+ 164:Core/Src/Detector/Code/FindX.c **** void FW5_SetPorog(float nSigm, uint16_t Tcall) {
+ 111              		.loc 1 164 48 is_stmt 1 view -0
+ 112              		.cfi_startproc
+ 113              		@ args = 0, pretend = 0, frame = 0
+ 114              		@ frame_needed = 0, uses_anonymous_args = 0
+ 115              		@ link register save eliminated.
+ 165:Core/Src/Detector/Code/FindX.c ****      TFW5_Tcall = Tcall;
+ 116              		.loc 1 165 6 view .LVU18
+ 117              		.loc 1 165 17 is_stmt 0 view .LVU19
+ 118 0000 024B     		ldr	r3, .L10
+ 119 0002 1880     		strh	r0, [r3]	@ movhi
+ 166:Core/Src/Detector/Code/FindX.c ****      Find_Sigma = nSigm;
+ 120              		.loc 1 166 6 is_stmt 1 view .LVU20
+ 121              		.loc 1 166 17 is_stmt 0 view .LVU21
+ 122 0004 024B     		ldr	r3, .L10+4
+ 123 0006 83ED000A 		vstr.32	s0, [r3]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 6
+
+
+ 167:Core/Src/Detector/Code/FindX.c **** }
+ 124              		.loc 1 167 1 view .LVU22
+ 125 000a 7047     		bx	lr
+ 126              	.L11:
+ 127              		.align	2
+ 128              	.L10:
+ 129 000c 00000000 		.word	.LANCHOR1
+ 130 0010 00000000 		.word	.LANCHOR2
+ 131              		.cfi_endproc
+ 132              	.LFE2:
+ 134              		.section	.text.FW5_Clear,"ax",%progbits
+ 135              		.align	1
+ 136              		.global	FW5_Clear
+ 137              		.syntax unified
+ 138              		.thumb
+ 139              		.thumb_func
+ 140              		.fpu fpv4-sp-d16
+ 142              	FW5_Clear:
+ 143              	.LFB5:
+ 168:Core/Src/Detector/Code/FindX.c **** 
+ 169:Core/Src/Detector/Code/FindX.c **** 
+ 170:Core/Src/Detector/Code/FindX.c **** // Callibration
+ 171:Core/Src/Detector/Code/FindX.c **** void FW5_Calibration(void) {
+ 172:Core/Src/Detector/Code/FindX.c ****   
+ 173:Core/Src/Detector/Code/FindX.c ****    FW5Data.Valid=0;
+ 174:Core/Src/Detector/Code/FindX.c ****    FW5Data.Nt = 0;
+ 175:Core/Src/Detector/Code/FindX.c ****    FW5Data.Work = TFW5_bStartCallibration;
+ 176:Core/Src/Detector/Code/FindX.c ****    FW5_Clear( );
+ 177:Core/Src/Detector/Code/FindX.c ****    FW5Data.Valid=0;
+ 178:Core/Src/Detector/Code/FindX.c ****    
+ 179:Core/Src/Detector/Code/FindX.c **** }
+ 180:Core/Src/Detector/Code/FindX.c **** 
+ 181:Core/Src/Detector/Code/FindX.c **** // Read
+ 182:Core/Src/Detector/Code/FindX.c **** void FW5_Read(void) {  
+ 183:Core/Src/Detector/Code/FindX.c ****   
+ 184:Core/Src/Detector/Code/FindX.c ****   static uint16_t i;
+ 185:Core/Src/Detector/Code/FindX.c ****  
+ 186:Core/Src/Detector/Code/FindX.c ****   switch (FW5Data.Work) {
+ 187:Core/Src/Detector/Code/FindX.c ****     
+ 188:Core/Src/Detector/Code/FindX.c ****     case TFW5_bWork :
+ 189:Core/Src/Detector/Code/FindX.c ****      
+ 190:Core/Src/Detector/Code/FindX.c ****       if (++i>TFW5_NintSet) { 
+ 191:Core/Src/Detector/Code/FindX.c ****         
+ 192:Core/Src/Detector/Code/FindX.c ****         //
+ 193:Core/Src/Detector/Code/FindX.c ****         i=0;
+ 194:Core/Src/Detector/Code/FindX.c ****         
+ 195:Core/Src/Detector/Code/FindX.c ****         // Read Cyclic Buffer
+ 196:Core/Src/Detector/Code/FindX.c ****         FW5Data.BuffCount[FW5Data.WriteIndex] = FW5Data.CountWindow; 
+ 197:Core/Src/Detector/Code/FindX.c **** 
+ 198:Core/Src/Detector/Code/FindX.c ****         FW5_Clear( );
+ 199:Core/Src/Detector/Code/FindX.c ****      
+ 200:Core/Src/Detector/Code/FindX.c ****         // Inc WriteIndex
+ 201:Core/Src/Detector/Code/FindX.c ****         ++FW5Data.WriteIndex;
+ 202:Core/Src/Detector/Code/FindX.c ****         FW5Data.WriteIndex&=TFW5_BuffClear;
+ 203:Core/Src/Detector/Code/FindX.c ****         
+ 204:Core/Src/Detector/Code/FindX.c ****         // Valid
+ 205:Core/Src/Detector/Code/FindX.c ****         if (FW5Data.Valid==0) {    
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 7
+
+
+ 206:Core/Src/Detector/Code/FindX.c ****           if (FW5Data.Nt++>TFW5_SizeOfBuff) FW5Data.Valid=1;
+ 207:Core/Src/Detector/Code/FindX.c ****         }
+ 208:Core/Src/Detector/Code/FindX.c ****         
+ 209:Core/Src/Detector/Code/FindX.c ****        }
+ 210:Core/Src/Detector/Code/FindX.c ****         
+ 211:Core/Src/Detector/Code/FindX.c ****        break;
+ 212:Core/Src/Detector/Code/FindX.c ****         
+ 213:Core/Src/Detector/Code/FindX.c ****     case TFW5_bCallibration :
+ 214:Core/Src/Detector/Code/FindX.c ****       
+ 215:Core/Src/Detector/Code/FindX.c ****         ++FW5Data.Nt;
+ 216:Core/Src/Detector/Code/FindX.c ****         
+ 217:Core/Src/Detector/Code/FindX.c ****         if (FW5Data.Nt>TFW5_Tcall) {
+ 218:Core/Src/Detector/Code/FindX.c ****           
+ 219:Core/Src/Detector/Code/FindX.c ****             // Time
+ 220:Core/Src/Detector/Code/FindX.c ****             FW5Data.T = (float)FW5Data.Nt;
+ 221:Core/Src/Detector/Code/FindX.c ****             FW5Data.T *=(float)TFW5_dt;
+ 222:Core/Src/Detector/Code/FindX.c ****             
+ 223:Core/Src/Detector/Code/FindX.c ****             // Window
+ 224:Core/Src/Detector/Code/FindX.c ****             FW5Data.CPS = (float)FW5Data.CountWindow;
+ 225:Core/Src/Detector/Code/FindX.c ****             FW5Data.CPS /= FW5Data.T;
+ 226:Core/Src/Detector/Code/FindX.c ****             FW5_CalculatePorog_i(TFW5_T,Find_Sigma,FW5Data.CPS,FW5Data.T);
+ 227:Core/Src/Detector/Code/FindX.c ****                
+ 228:Core/Src/Detector/Code/FindX.c ****             // Clear
+ 229:Core/Src/Detector/Code/FindX.c ****             if (FW5Data.Work == TFW5_bCallibration) {
+ 230:Core/Src/Detector/Code/FindX.c ****                   FW5_Clear( ); 
+ 231:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Work = TFW5_bWork;
+ 232:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Nt = 0;
+ 233:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Valid = 0;
+ 234:Core/Src/Detector/Code/FindX.c ****                   FW5Data.ReadIndex  = 0;
+ 235:Core/Src/Detector/Code/FindX.c ****                   FW5Data.WriteIndex =  FW5Data.ReadIndex;
+ 236:Core/Src/Detector/Code/FindX.c ****                   i=0;
+ 237:Core/Src/Detector/Code/FindX.c ****             }
+ 238:Core/Src/Detector/Code/FindX.c ****             
+ 239:Core/Src/Detector/Code/FindX.c ****         } 
+ 240:Core/Src/Detector/Code/FindX.c ****         break;
+ 241:Core/Src/Detector/Code/FindX.c ****     default :
+ 242:Core/Src/Detector/Code/FindX.c ****         FW5Data.Valid = 0;
+ 243:Core/Src/Detector/Code/FindX.c ****         FW5Data.Work = TFW5_bCallibration;
+ 244:Core/Src/Detector/Code/FindX.c ****         FW5Data.Nt = 0;
+ 245:Core/Src/Detector/Code/FindX.c ****         i=0;
+ 246:Core/Src/Detector/Code/FindX.c ****         FW5_Clear( );
+ 247:Core/Src/Detector/Code/FindX.c ****     break;       
+ 248:Core/Src/Detector/Code/FindX.c ****   }     
+ 249:Core/Src/Detector/Code/FindX.c **** }
+ 250:Core/Src/Detector/Code/FindX.c **** 
+ 251:Core/Src/Detector/Code/FindX.c **** 
+ 252:Core/Src/Detector/Code/FindX.c **** // Clear Buff
+ 253:Core/Src/Detector/Code/FindX.c **** void FW5_Clear(void) {
+ 144              		.loc 1 253 22 is_stmt 1 view -0
+ 145              		.cfi_startproc
+ 146              		@ args = 0, pretend = 0, frame = 0
+ 147              		@ frame_needed = 0, uses_anonymous_args = 0
+ 148              		@ link register save eliminated.
+ 254:Core/Src/Detector/Code/FindX.c ****   // Clear Buffer
+ 255:Core/Src/Detector/Code/FindX.c ****   FW5Data.CountWindow=0;
+ 149              		.loc 1 255 3 view .LVU24
+ 150              		.loc 1 255 22 is_stmt 0 view .LVU25
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 8
+
+
+ 151 0000 014B     		ldr	r3, .L13
+ 152 0002 0022     		movs	r2, #0
+ 153 0004 5A60     		str	r2, [r3, #4]
+ 256:Core/Src/Detector/Code/FindX.c **** }
+ 154              		.loc 1 256 1 view .LVU26
+ 155 0006 7047     		bx	lr
+ 156              	.L14:
+ 157              		.align	2
+ 158              	.L13:
+ 159 0008 00000000 		.word	.LANCHOR0
+ 160              		.cfi_endproc
+ 161              	.LFE5:
+ 163              		.section	.text.FW5_Calibration,"ax",%progbits
+ 164              		.align	1
+ 165              		.global	FW5_Calibration
+ 166              		.syntax unified
+ 167              		.thumb
+ 168              		.thumb_func
+ 169              		.fpu fpv4-sp-d16
+ 171              	FW5_Calibration:
+ 172              	.LFB3:
+ 171:Core/Src/Detector/Code/FindX.c ****   
+ 173              		.loc 1 171 28 is_stmt 1 view -0
+ 174              		.cfi_startproc
+ 175              		@ args = 0, pretend = 0, frame = 0
+ 176              		@ frame_needed = 0, uses_anonymous_args = 0
+ 177 0000 38B5     		push	{r3, r4, r5, lr}
+ 178              	.LCFI0:
+ 179              		.cfi_def_cfa_offset 16
+ 180              		.cfi_offset 3, -16
+ 181              		.cfi_offset 4, -12
+ 182              		.cfi_offset 5, -8
+ 183              		.cfi_offset 14, -4
+ 173:Core/Src/Detector/Code/FindX.c ****    FW5Data.Nt = 0;
+ 184              		.loc 1 173 4 view .LVU28
+ 173:Core/Src/Detector/Code/FindX.c ****    FW5Data.Nt = 0;
+ 185              		.loc 1 173 17 is_stmt 0 view .LVU29
+ 186 0002 064C     		ldr	r4, .L17
+ 187 0004 0025     		movs	r5, #0
+ 188 0006 A4F89050 		strh	r5, [r4, #144]	@ movhi
+ 174:Core/Src/Detector/Code/FindX.c ****    FW5Data.Work = TFW5_bStartCallibration;
+ 189              		.loc 1 174 4 is_stmt 1 view .LVU30
+ 174:Core/Src/Detector/Code/FindX.c ****    FW5Data.Work = TFW5_bStartCallibration;
+ 190              		.loc 1 174 15 is_stmt 0 view .LVU31
+ 191 000a A4F88C50 		strh	r5, [r4, #140]	@ movhi
+ 175:Core/Src/Detector/Code/FindX.c ****    FW5_Clear( );
+ 192              		.loc 1 175 4 is_stmt 1 view .LVU32
+ 175:Core/Src/Detector/Code/FindX.c ****    FW5_Clear( );
+ 193              		.loc 1 175 17 is_stmt 0 view .LVU33
+ 194 000e 0223     		movs	r3, #2
+ 195 0010 2380     		strh	r3, [r4]	@ movhi
+ 176:Core/Src/Detector/Code/FindX.c ****    FW5Data.Valid=0;
+ 196              		.loc 1 176 4 is_stmt 1 view .LVU34
+ 197 0012 FFF7FEFF 		bl	FW5_Clear
+ 198              	.LVL6:
+ 177:Core/Src/Detector/Code/FindX.c ****    
+ 199              		.loc 1 177 4 view .LVU35
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 9
+
+
+ 177:Core/Src/Detector/Code/FindX.c ****    
+ 200              		.loc 1 177 17 is_stmt 0 view .LVU36
+ 201 0016 A4F89050 		strh	r5, [r4, #144]	@ movhi
+ 179:Core/Src/Detector/Code/FindX.c **** 
+ 202              		.loc 1 179 1 view .LVU37
+ 203 001a 38BD     		pop	{r3, r4, r5, pc}
+ 204              	.L18:
+ 205              		.align	2
+ 206              	.L17:
+ 207 001c 00000000 		.word	.LANCHOR0
+ 208              		.cfi_endproc
+ 209              	.LFE3:
+ 211              		.section	.text.FW5_Valid,"ax",%progbits
+ 212              		.align	1
+ 213              		.global	FW5_Valid
+ 214              		.syntax unified
+ 215              		.thumb
+ 216              		.thumb_func
+ 217              		.fpu fpv4-sp-d16
+ 219              	FW5_Valid:
+ 220              	.LFB6:
+ 257:Core/Src/Detector/Code/FindX.c **** 
+ 258:Core/Src/Detector/Code/FindX.c **** // Bool Find Mode 
+ 259:Core/Src/Detector/Code/FindX.c **** bool FW5_Valid(void) {
+ 221              		.loc 1 259 22 is_stmt 1 view -0
+ 222              		.cfi_startproc
+ 223              		@ args = 0, pretend = 0, frame = 0
+ 224              		@ frame_needed = 0, uses_anonymous_args = 0
+ 225              		@ link register save eliminated.
+ 260:Core/Src/Detector/Code/FindX.c ****  return FW5Data.Valid;   
+ 226              		.loc 1 260 2 view .LVU39
+ 227              		.loc 1 260 16 is_stmt 0 view .LVU40
+ 228 0000 034B     		ldr	r3, .L20
+ 229 0002 B3F89000 		ldrh	r0, [r3, #144]
+ 261:Core/Src/Detector/Code/FindX.c **** }
+ 230              		.loc 1 261 1 view .LVU41
+ 231 0006 0038     		subs	r0, r0, #0
+ 232 0008 18BF     		it	ne
+ 233 000a 0120     		movne	r0, #1
+ 234 000c 7047     		bx	lr
+ 235              	.L21:
+ 236 000e 00BF     		.align	2
+ 237              	.L20:
+ 238 0010 00000000 		.word	.LANCHOR0
+ 239              		.cfi_endproc
+ 240              	.LFE6:
+ 242              		.global	__aeabi_f2d
+ 243              		.global	__aeabi_dadd
+ 244              		.global	__aeabi_dmul
+ 245              		.global	__aeabi_d2f
+ 246              		.section	.text.FW5_CalculatePorog_i,"ax",%progbits
+ 247              		.align	1
+ 248              		.global	FW5_CalculatePorog_i
+ 249              		.syntax unified
+ 250              		.thumb
+ 251              		.thumb_func
+ 252              		.fpu fpv4-sp-d16
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 10
+
+
+ 254              	FW5_CalculatePorog_i:
+ 255              	.LVL7:
+ 256              	.LFB7:
+ 262:Core/Src/Detector/Code/FindX.c **** 
+ 263:Core/Src/Detector/Code/FindX.c **** 
+ 264:Core/Src/Detector/Code/FindX.c **** // Calibration 
+ 265:Core/Src/Detector/Code/FindX.c **** void FW5_CalculatePorog_i(float dt, float nSigma, float nFona_cps, float TCAL_sec) {
+ 257              		.loc 1 265 84 is_stmt 1 view -0
+ 258              		.cfi_startproc
+ 259              		@ args = 0, pretend = 0, frame = 0
+ 260              		@ frame_needed = 0, uses_anonymous_args = 0
+ 261              		.loc 1 265 84 is_stmt 0 view .LVU43
+ 262 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 263              	.LCFI1:
+ 264              		.cfi_def_cfa_offset 24
+ 265              		.cfi_offset 4, -24
+ 266              		.cfi_offset 5, -20
+ 267              		.cfi_offset 6, -16
+ 268              		.cfi_offset 7, -12
+ 269              		.cfi_offset 8, -8
+ 270              		.cfi_offset 14, -4
+ 271 0004 2DED048B 		vpush.64	{d8, d9}
+ 272              	.LCFI2:
+ 273              		.cfi_def_cfa_offset 40
+ 274              		.cfi_offset 80, -40
+ 275              		.cfi_offset 81, -36
+ 276              		.cfi_offset 82, -32
+ 277              		.cfi_offset 83, -28
+ 278 0008 F0EE408A 		vmov.f32	s17, s0
+ 279 000c 10EE905A 		vmov	r5, s1
+ 280 0010 B0EE419A 		vmov.f32	s18, s2
+ 266:Core/Src/Detector/Code/FindX.c ****   
+ 267:Core/Src/Detector/Code/FindX.c ****   uint8_t i;
+ 281              		.loc 1 267 3 is_stmt 1 view .LVU44
+ 268:Core/Src/Detector/Code/FindX.c ****   float Time;
+ 282              		.loc 1 268 3 view .LVU45
+ 269:Core/Src/Detector/Code/FindX.c ****   float K1,K2;
+ 283              		.loc 1 269 3 view .LVU46
+ 270:Core/Src/Detector/Code/FindX.c **** 
+ 271:Core/Src/Detector/Code/FindX.c ****   // Fon j-win; i-step.
+ 272:Core/Src/Detector/Code/FindX.c ****   FW5Data.Dt_nFona_cps = nFona_cps*dt;
+ 284              		.loc 1 272 3 view .LVU47
+ 285              		.loc 1 272 35 is_stmt 0 view .LVU48
+ 286 0014 61EE007A 		vmul.f32	s15, s2, s0
+ 287              		.loc 1 272 24 view .LVU49
+ 288 0018 1D4B     		ldr	r3, .L26+8
+ 289 001a C3ED027A 		vstr.32	s15, [r3, #8]
+ 273:Core/Src/Detector/Code/FindX.c ****  
+ 274:Core/Src/Detector/Code/FindX.c ****   // K2
+ 275:Core/Src/Detector/Code/FindX.c ****   K2 = (float)nFona_cps;
+ 290              		.loc 1 275 3 is_stmt 1 view .LVU50
+ 291              	.LVL8:
+ 276:Core/Src/Detector/Code/FindX.c ****   K2/= TCAL_sec;
+ 292              		.loc 1 276 3 view .LVU51
+ 293              		.loc 1 276 5 is_stmt 0 view .LVU52
+ 294 001e C1EE219A 		vdiv.f32	s19, s2, s3
+ 295              	.LVL9:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 11
+
+
+ 277:Core/Src/Detector/Code/FindX.c ****   
+ 278:Core/Src/Detector/Code/FindX.c ****   // Время
+ 279:Core/Src/Detector/Code/FindX.c ****   Time=dt;
+ 296              		.loc 1 279 3 is_stmt 1 view .LVU53
+ 280:Core/Src/Detector/Code/FindX.c ****   
+ 281:Core/Src/Detector/Code/FindX.c ****   for(i=0;i<TFW5_SizeOfBuff;i++) {
+ 297              		.loc 1 281 3 view .LVU54
+ 279:Core/Src/Detector/Code/FindX.c ****   
+ 298              		.loc 1 279 7 is_stmt 0 view .LVU55
+ 299 0022 B0EE408A 		vmov.f32	s16, s0
+ 300              		.loc 1 281 8 view .LVU56
+ 301 0026 0024     		movs	r4, #0
+ 302              		.loc 1 281 3 view .LVU57
+ 303 0028 28E0     		b	.L23
+ 304              	.LVL10:
+ 305              	.L24:
+ 282:Core/Src/Detector/Code/FindX.c ****     
+ 283:Core/Src/Detector/Code/FindX.c ****       K1    = (float)nFona_cps;
+ 306              		.loc 1 283 7 is_stmt 1 discriminator 3 view .LVU58
+ 284:Core/Src/Detector/Code/FindX.c ****       K1   /= Time; 
+ 307              		.loc 1 284 7 discriminator 3 view .LVU59
+ 308              		.loc 1 284 12 is_stmt 0 discriminator 3 view .LVU60
+ 309 002a 89EE080A 		vdiv.f32	s0, s18, s16
+ 310              	.LVL11:
+ 285:Core/Src/Detector/Code/FindX.c ****       K1   += K2;
+ 311              		.loc 1 285 7 is_stmt 1 discriminator 3 view .LVU61
+ 286:Core/Src/Detector/Code/FindX.c ****       K1    = ssqrt(K1);
+ 312              		.loc 1 286 7 discriminator 3 view .LVU62
+ 313              		.loc 1 286 15 is_stmt 0 discriminator 3 view .LVU63
+ 314 002e 39EE800A 		vadd.f32	s0, s19, s0
+ 315              	.LVL12:
+ 316              		.loc 1 286 15 discriminator 3 view .LVU64
+ 317 0032 FFF7FEFF 		bl	ssqrt
+ 318              	.LVL13:
+ 319              		.loc 1 286 15 discriminator 3 view .LVU65
+ 320 0036 10EE108A 		vmov	r8, s0
+ 321              	.LVL14:
+ 287:Core/Src/Detector/Code/FindX.c ****       K1   *= (nSigma+0.1);
+ 322              		.loc 1 287 7 is_stmt 1 discriminator 3 view .LVU66
+ 323              		.loc 1 287 22 is_stmt 0 discriminator 3 view .LVU67
+ 324 003a 2846     		mov	r0, r5	@ float
+ 325 003c FFF7FEFF 		bl	__aeabi_f2d
+ 326              	.LVL15:
+ 327 0040 11A3     		adr	r3, .L26
+ 328 0042 D3E90023 		ldrd	r2, [r3]
+ 329 0046 FFF7FEFF 		bl	__aeabi_dadd
+ 330              	.LVL16:
+ 331 004a 0646     		mov	r6, r0
+ 332 004c 0F46     		mov	r7, r1
+ 333              		.loc 1 287 12 discriminator 3 view .LVU68
+ 334 004e 4046     		mov	r0, r8	@ float
+ 335 0050 FFF7FEFF 		bl	__aeabi_f2d
+ 336              	.LVL17:
+ 337 0054 3246     		mov	r2, r6
+ 338 0056 3B46     		mov	r3, r7
+ 339 0058 FFF7FEFF 		bl	__aeabi_dmul
+ 340              	.LVL18:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 12
+
+
+ 341 005c FFF7FEFF 		bl	__aeabi_d2f
+ 342              	.LVL19:
+ 343 0060 07EE900A 		vmov	s15, r0
+ 344              	.LVL20:
+ 288:Core/Src/Detector/Code/FindX.c ****       K1   *= dt;
+ 345              		.loc 1 288 7 is_stmt 1 discriminator 3 view .LVU69
+ 346              		.loc 1 288 12 is_stmt 0 discriminator 3 view .LVU70
+ 347 0064 68EEA77A 		vmul.f32	s15, s17, s15
+ 348              	.LVL21:
+ 289:Core/Src/Detector/Code/FindX.c ****       
+ 290:Core/Src/Detector/Code/FindX.c ****       FW5Data.Dt_RF_PorogCPS[i]=K1;
+ 349              		.loc 1 290 7 is_stmt 1 discriminator 3 view .LVU71
+ 350              		.loc 1 290 32 is_stmt 0 discriminator 3 view .LVU72
+ 351 0068 A21C     		adds	r2, r4, #2
+ 352 006a 094B     		ldr	r3, .L26+8
+ 353 006c 03EB8203 		add	r3, r3, r2, lsl #2
+ 354 0070 C3ED017A 		vstr.32	s15, [r3, #4]
+ 291:Core/Src/Detector/Code/FindX.c ****       
+ 292:Core/Src/Detector/Code/FindX.c ****       // Next Step
+ 293:Core/Src/Detector/Code/FindX.c ****       Time += dt;
+ 355              		.loc 1 293 7 is_stmt 1 discriminator 3 view .LVU73
+ 356              		.loc 1 293 12 is_stmt 0 discriminator 3 view .LVU74
+ 357 0074 38EE288A 		vadd.f32	s16, s16, s17
+ 358              	.LVL22:
+ 281:Core/Src/Detector/Code/FindX.c ****     
+ 359              		.loc 1 281 29 is_stmt 1 discriminator 3 view .LVU75
+ 281:Core/Src/Detector/Code/FindX.c ****     
+ 360              		.loc 1 281 30 is_stmt 0 discriminator 3 view .LVU76
+ 361 0078 0134     		adds	r4, r4, #1
+ 362              	.LVL23:
+ 281:Core/Src/Detector/Code/FindX.c ****     
+ 363              		.loc 1 281 30 discriminator 3 view .LVU77
+ 364 007a E4B2     		uxtb	r4, r4
+ 365              	.LVL24:
+ 366              	.L23:
+ 281:Core/Src/Detector/Code/FindX.c ****     
+ 367              		.loc 1 281 11 is_stmt 1 discriminator 1 view .LVU78
+ 281:Core/Src/Detector/Code/FindX.c ****     
+ 368              		.loc 1 281 3 is_stmt 0 discriminator 1 view .LVU79
+ 369 007c 0F2C     		cmp	r4, #15
+ 370 007e D4D9     		bls	.L24
+ 294:Core/Src/Detector/Code/FindX.c ****   }
+ 295:Core/Src/Detector/Code/FindX.c ****   
+ 296:Core/Src/Detector/Code/FindX.c **** }
+ 371              		.loc 1 296 1 view .LVU80
+ 372 0080 BDEC048B 		vldm	sp!, {d8-d9}
+ 373              	.LCFI3:
+ 374              		.cfi_restore 82
+ 375              		.cfi_restore 83
+ 376              		.cfi_restore 80
+ 377              		.cfi_restore 81
+ 378              		.cfi_def_cfa_offset 24
+ 379              	.LVL25:
+ 380              		.loc 1 296 1 view .LVU81
+ 381 0084 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 382              	.LVL26:
+ 383              	.L27:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 13
+
+
+ 384              		.loc 1 296 1 view .LVU82
+ 385              		.align	3
+ 386              	.L26:
+ 387 0088 9A999999 		.word	-1717986918
+ 388 008c 9999B93F 		.word	1069128089
+ 389 0090 00000000 		.word	.LANCHOR0
+ 390              		.cfi_endproc
+ 391              	.LFE7:
+ 393              		.section	.text.FW5_Read,"ax",%progbits
+ 394              		.align	1
+ 395              		.global	FW5_Read
+ 396              		.syntax unified
+ 397              		.thumb
+ 398              		.thumb_func
+ 399              		.fpu fpv4-sp-d16
+ 401              	FW5_Read:
+ 402              	.LFB4:
+ 182:Core/Src/Detector/Code/FindX.c ****   
+ 403              		.loc 1 182 21 is_stmt 1 view -0
+ 404              		.cfi_startproc
+ 405              		@ args = 0, pretend = 0, frame = 0
+ 406              		@ frame_needed = 0, uses_anonymous_args = 0
+ 407 0000 10B5     		push	{r4, lr}
+ 408              	.LCFI4:
+ 409              		.cfi_def_cfa_offset 8
+ 410              		.cfi_offset 4, -8
+ 411              		.cfi_offset 14, -4
+ 184:Core/Src/Detector/Code/FindX.c ****  
+ 412              		.loc 1 184 3 view .LVU84
+ 186:Core/Src/Detector/Code/FindX.c ****     
+ 413              		.loc 1 186 3 view .LVU85
+ 186:Core/Src/Detector/Code/FindX.c ****     
+ 414              		.loc 1 186 18 is_stmt 0 view .LVU86
+ 415 0002 3B4B     		ldr	r3, .L33
+ 416 0004 1B88     		ldrh	r3, [r3]
+ 186:Core/Src/Detector/Code/FindX.c ****     
+ 417              		.loc 1 186 3 view .LVU87
+ 418 0006 73B3     		cbz	r3, .L29
+ 419 0008 012B     		cmp	r3, #1
+ 420 000a 65D1     		bne	.L30
+ 190:Core/Src/Detector/Code/FindX.c ****         
+ 421              		.loc 1 190 7 is_stmt 1 view .LVU88
+ 190:Core/Src/Detector/Code/FindX.c ****         
+ 422              		.loc 1 190 11 is_stmt 0 view .LVU89
+ 423 000c 394A     		ldr	r2, .L33+4
+ 424 000e 1388     		ldrh	r3, [r2]
+ 425 0010 0133     		adds	r3, r3, #1
+ 426 0012 9BB2     		uxth	r3, r3
+ 190:Core/Src/Detector/Code/FindX.c ****         
+ 427              		.loc 1 190 10 view .LVU90
+ 428 0014 1380     		strh	r3, [r2]	@ movhi
+ 429 0016 002B     		cmp	r3, #0
+ 430 0018 69D0     		beq	.L28
+ 193:Core/Src/Detector/Code/FindX.c ****         
+ 431              		.loc 1 193 9 is_stmt 1 view .LVU91
+ 193:Core/Src/Detector/Code/FindX.c ****         
+ 432              		.loc 1 193 10 is_stmt 0 view .LVU92
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 14
+
+
+ 433 001a 1346     		mov	r3, r2
+ 434 001c 0022     		movs	r2, #0
+ 435 001e 1A80     		strh	r2, [r3]	@ movhi
+ 196:Core/Src/Detector/Code/FindX.c **** 
+ 436              		.loc 1 196 9 is_stmt 1 view .LVU93
+ 196:Core/Src/Detector/Code/FindX.c **** 
+ 437              		.loc 1 196 34 is_stmt 0 view .LVU94
+ 438 0020 334C     		ldr	r4, .L33
+ 439 0022 94F88E30 		ldrb	r3, [r4, #142]	@ zero_extendqisi2
+ 196:Core/Src/Detector/Code/FindX.c **** 
+ 440              		.loc 1 196 56 view .LVU95
+ 441 0026 6268     		ldr	r2, [r4, #4]
+ 196:Core/Src/Detector/Code/FindX.c **** 
+ 442              		.loc 1 196 47 view .LVU96
+ 443 0028 1233     		adds	r3, r3, #18
+ 444 002a 04EB8303 		add	r3, r4, r3, lsl #2
+ 445 002e 5A60     		str	r2, [r3, #4]
+ 198:Core/Src/Detector/Code/FindX.c ****      
+ 446              		.loc 1 198 9 is_stmt 1 view .LVU97
+ 447 0030 FFF7FEFF 		bl	FW5_Clear
+ 448              	.LVL27:
+ 201:Core/Src/Detector/Code/FindX.c ****         FW5Data.WriteIndex&=TFW5_BuffClear;
+ 449              		.loc 1 201 9 view .LVU98
+ 201:Core/Src/Detector/Code/FindX.c ****         FW5Data.WriteIndex&=TFW5_BuffClear;
+ 450              		.loc 1 201 18 is_stmt 0 view .LVU99
+ 451 0034 94F88E30 		ldrb	r3, [r4, #142]	@ zero_extendqisi2
+ 201:Core/Src/Detector/Code/FindX.c ****         FW5Data.WriteIndex&=TFW5_BuffClear;
+ 452              		.loc 1 201 9 view .LVU100
+ 453 0038 0133     		adds	r3, r3, #1
+ 454 003a DBB2     		uxtb	r3, r3
+ 455 003c 84F88E30 		strb	r3, [r4, #142]
+ 202:Core/Src/Detector/Code/FindX.c ****         
+ 456              		.loc 1 202 9 is_stmt 1 view .LVU101
+ 202:Core/Src/Detector/Code/FindX.c ****         
+ 457              		.loc 1 202 27 is_stmt 0 view .LVU102
+ 458 0040 03F00F03 		and	r3, r3, #15
+ 459 0044 84F88E30 		strb	r3, [r4, #142]
+ 205:Core/Src/Detector/Code/FindX.c ****           if (FW5Data.Nt++>TFW5_SizeOfBuff) FW5Data.Valid=1;
+ 460              		.loc 1 205 9 is_stmt 1 view .LVU103
+ 205:Core/Src/Detector/Code/FindX.c ****           if (FW5Data.Nt++>TFW5_SizeOfBuff) FW5Data.Valid=1;
+ 461              		.loc 1 205 20 is_stmt 0 view .LVU104
+ 462 0048 B4F89030 		ldrh	r3, [r4, #144]
+ 205:Core/Src/Detector/Code/FindX.c ****           if (FW5Data.Nt++>TFW5_SizeOfBuff) FW5Data.Valid=1;
+ 463              		.loc 1 205 12 view .LVU105
+ 464 004c 002B     		cmp	r3, #0
+ 465 004e 4ED1     		bne	.L28
+ 206:Core/Src/Detector/Code/FindX.c ****         }
+ 466              		.loc 1 206 11 is_stmt 1 view .LVU106
+ 206:Core/Src/Detector/Code/FindX.c ****         }
+ 467              		.loc 1 206 22 is_stmt 0 view .LVU107
+ 468 0050 B4F88C30 		ldrh	r3, [r4, #140]
+ 206:Core/Src/Detector/Code/FindX.c ****         }
+ 469              		.loc 1 206 25 view .LVU108
+ 470 0054 591C     		adds	r1, r3, #1
+ 471 0056 A4F88C10 		strh	r1, [r4, #140]	@ movhi
+ 206:Core/Src/Detector/Code/FindX.c ****         }
+ 472              		.loc 1 206 14 view .LVU109
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 15
+
+
+ 473 005a 102B     		cmp	r3, #16
+ 474 005c 47D9     		bls	.L28
+ 206:Core/Src/Detector/Code/FindX.c ****         }
+ 475              		.loc 1 206 45 is_stmt 1 discriminator 1 view .LVU110
+ 206:Core/Src/Detector/Code/FindX.c ****         }
+ 476              		.loc 1 206 58 is_stmt 0 discriminator 1 view .LVU111
+ 477 005e 0122     		movs	r2, #1
+ 478 0060 A4F89020 		strh	r2, [r4, #144]	@ movhi
+ 479 0064 43E0     		b	.L28
+ 480              	.L29:
+ 215:Core/Src/Detector/Code/FindX.c ****         
+ 481              		.loc 1 215 9 is_stmt 1 view .LVU112
+ 215:Core/Src/Detector/Code/FindX.c ****         
+ 482              		.loc 1 215 18 is_stmt 0 view .LVU113
+ 483 0066 224A     		ldr	r2, .L33
+ 484 0068 B2F88C30 		ldrh	r3, [r2, #140]
+ 215:Core/Src/Detector/Code/FindX.c ****         
+ 485              		.loc 1 215 9 view .LVU114
+ 486 006c 0133     		adds	r3, r3, #1
+ 487 006e 9BB2     		uxth	r3, r3
+ 488 0070 A2F88C30 		strh	r3, [r2, #140]	@ movhi
+ 217:Core/Src/Detector/Code/FindX.c ****           
+ 489              		.loc 1 217 9 is_stmt 1 view .LVU115
+ 217:Core/Src/Detector/Code/FindX.c ****           
+ 490              		.loc 1 217 23 is_stmt 0 view .LVU116
+ 491 0074 204A     		ldr	r2, .L33+8
+ 492 0076 1288     		ldrh	r2, [r2]
+ 217:Core/Src/Detector/Code/FindX.c ****           
+ 493              		.loc 1 217 12 view .LVU117
+ 494 0078 9342     		cmp	r3, r2
+ 495 007a 38D9     		bls	.L28
+ 220:Core/Src/Detector/Code/FindX.c ****             FW5Data.T *=(float)TFW5_dt;
+ 496              		.loc 1 220 13 is_stmt 1 view .LVU118
+ 220:Core/Src/Detector/Code/FindX.c ****             FW5Data.T *=(float)TFW5_dt;
+ 497              		.loc 1 220 25 is_stmt 0 view .LVU119
+ 498 007c 07EE903A 		vmov	s15, r3	@ int
+ 499 0080 F8EE671A 		vcvt.f32.u32	s3, s15
+ 220:Core/Src/Detector/Code/FindX.c ****             FW5Data.T *=(float)TFW5_dt;
+ 500              		.loc 1 220 23 view .LVU120
+ 501 0084 1A4C     		ldr	r4, .L33
+ 502 0086 C4ED261A 		vstr.32	s3, [r4, #152]
+ 221:Core/Src/Detector/Code/FindX.c ****             
+ 503              		.loc 1 221 13 is_stmt 1 view .LVU121
+ 221:Core/Src/Detector/Code/FindX.c ****             
+ 504              		.loc 1 221 23 is_stmt 0 view .LVU122
+ 505 008a B5EE000A 		vmov.f32	s0, #2.5e-1
+ 506 008e 61EE801A 		vmul.f32	s3, s3, s0
+ 507 0092 C4ED261A 		vstr.32	s3, [r4, #152]
+ 224:Core/Src/Detector/Code/FindX.c ****             FW5Data.CPS /= FW5Data.T;
+ 508              		.loc 1 224 13 is_stmt 1 view .LVU123
+ 224:Core/Src/Detector/Code/FindX.c ****             FW5Data.CPS /= FW5Data.T;
+ 509              		.loc 1 224 27 is_stmt 0 view .LVU124
+ 510 0096 D4ED017A 		vldr.32	s15, [r4, #4]	@ int
+ 511 009a F8EE677A 		vcvt.f32.u32	s15, s15
+ 224:Core/Src/Detector/Code/FindX.c ****             FW5Data.CPS /= FW5Data.T;
+ 512              		.loc 1 224 25 view .LVU125
+ 513 009e C4ED257A 		vstr.32	s15, [r4, #148]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 16
+
+
+ 225:Core/Src/Detector/Code/FindX.c ****             FW5_CalculatePorog_i(TFW5_T,Find_Sigma,FW5Data.CPS,FW5Data.T);
+ 514              		.loc 1 225 13 is_stmt 1 view .LVU126
+ 225:Core/Src/Detector/Code/FindX.c ****             FW5_CalculatePorog_i(TFW5_T,Find_Sigma,FW5Data.CPS,FW5Data.T);
+ 515              		.loc 1 225 25 is_stmt 0 view .LVU127
+ 516 00a2 87EEA11A 		vdiv.f32	s2, s15, s3
+ 517 00a6 84ED251A 		vstr.32	s2, [r4, #148]
+ 226:Core/Src/Detector/Code/FindX.c ****                
+ 518              		.loc 1 226 13 is_stmt 1 view .LVU128
+ 519 00aa 144B     		ldr	r3, .L33+12
+ 520 00ac D3ED000A 		vldr.32	s1, [r3]
+ 521 00b0 FFF7FEFF 		bl	FW5_CalculatePorog_i
+ 522              	.LVL28:
+ 229:Core/Src/Detector/Code/FindX.c ****                   FW5_Clear( ); 
+ 523              		.loc 1 229 13 view .LVU129
+ 229:Core/Src/Detector/Code/FindX.c ****                   FW5_Clear( ); 
+ 524              		.loc 1 229 24 is_stmt 0 view .LVU130
+ 525 00b4 2388     		ldrh	r3, [r4]
+ 229:Core/Src/Detector/Code/FindX.c ****                   FW5_Clear( ); 
+ 526              		.loc 1 229 16 view .LVU131
+ 527 00b6 D3B9     		cbnz	r3, .L28
+ 230:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Work = TFW5_bWork;
+ 528              		.loc 1 230 19 is_stmt 1 view .LVU132
+ 529 00b8 FFF7FEFF 		bl	FW5_Clear
+ 530              	.LVL29:
+ 231:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Nt = 0;
+ 531              		.loc 1 231 19 view .LVU133
+ 231:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Nt = 0;
+ 532              		.loc 1 231 32 is_stmt 0 view .LVU134
+ 533 00bc 0123     		movs	r3, #1
+ 534 00be 2380     		strh	r3, [r4]	@ movhi
+ 232:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Valid = 0;
+ 535              		.loc 1 232 19 is_stmt 1 view .LVU135
+ 232:Core/Src/Detector/Code/FindX.c ****                   FW5Data.Valid = 0;
+ 536              		.loc 1 232 30 is_stmt 0 view .LVU136
+ 537 00c0 0023     		movs	r3, #0
+ 538 00c2 A4F88C30 		strh	r3, [r4, #140]	@ movhi
+ 233:Core/Src/Detector/Code/FindX.c ****                   FW5Data.ReadIndex  = 0;
+ 539              		.loc 1 233 19 is_stmt 1 view .LVU137
+ 233:Core/Src/Detector/Code/FindX.c ****                   FW5Data.ReadIndex  = 0;
+ 540              		.loc 1 233 33 is_stmt 0 view .LVU138
+ 541 00c6 A4F89030 		strh	r3, [r4, #144]	@ movhi
+ 234:Core/Src/Detector/Code/FindX.c ****                   FW5Data.WriteIndex =  FW5Data.ReadIndex;
+ 542              		.loc 1 234 19 is_stmt 1 view .LVU139
+ 234:Core/Src/Detector/Code/FindX.c ****                   FW5Data.WriteIndex =  FW5Data.ReadIndex;
+ 543              		.loc 1 234 38 is_stmt 0 view .LVU140
+ 544 00ca 84F88F30 		strb	r3, [r4, #143]
+ 235:Core/Src/Detector/Code/FindX.c ****                   i=0;
+ 545              		.loc 1 235 19 is_stmt 1 view .LVU141
+ 235:Core/Src/Detector/Code/FindX.c ****                   i=0;
+ 546              		.loc 1 235 38 is_stmt 0 view .LVU142
+ 547 00ce 84F88E30 		strb	r3, [r4, #142]
+ 236:Core/Src/Detector/Code/FindX.c ****             }
+ 548              		.loc 1 236 19 is_stmt 1 view .LVU143
+ 236:Core/Src/Detector/Code/FindX.c ****             }
+ 549              		.loc 1 236 20 is_stmt 0 view .LVU144
+ 550 00d2 084A     		ldr	r2, .L33+4
+ 551 00d4 1380     		strh	r3, [r2]	@ movhi
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 17
+
+
+ 552 00d6 0AE0     		b	.L28
+ 553              	.L30:
+ 242:Core/Src/Detector/Code/FindX.c ****         FW5Data.Work = TFW5_bCallibration;
+ 554              		.loc 1 242 9 is_stmt 1 view .LVU145
+ 242:Core/Src/Detector/Code/FindX.c ****         FW5Data.Work = TFW5_bCallibration;
+ 555              		.loc 1 242 23 is_stmt 0 view .LVU146
+ 556 00d8 054A     		ldr	r2, .L33
+ 557 00da 0023     		movs	r3, #0
+ 558 00dc A2F89030 		strh	r3, [r2, #144]	@ movhi
+ 243:Core/Src/Detector/Code/FindX.c ****         FW5Data.Nt = 0;
+ 559              		.loc 1 243 9 is_stmt 1 view .LVU147
+ 243:Core/Src/Detector/Code/FindX.c ****         FW5Data.Nt = 0;
+ 560              		.loc 1 243 22 is_stmt 0 view .LVU148
+ 561 00e0 1380     		strh	r3, [r2]	@ movhi
+ 244:Core/Src/Detector/Code/FindX.c ****         i=0;
+ 562              		.loc 1 244 9 is_stmt 1 view .LVU149
+ 244:Core/Src/Detector/Code/FindX.c ****         i=0;
+ 563              		.loc 1 244 20 is_stmt 0 view .LVU150
+ 564 00e2 A2F88C30 		strh	r3, [r2, #140]	@ movhi
+ 245:Core/Src/Detector/Code/FindX.c ****         FW5_Clear( );
+ 565              		.loc 1 245 9 is_stmt 1 view .LVU151
+ 245:Core/Src/Detector/Code/FindX.c ****         FW5_Clear( );
+ 566              		.loc 1 245 10 is_stmt 0 view .LVU152
+ 567 00e6 034A     		ldr	r2, .L33+4
+ 568 00e8 1380     		strh	r3, [r2]	@ movhi
+ 246:Core/Src/Detector/Code/FindX.c ****     break;       
+ 569              		.loc 1 246 9 is_stmt 1 view .LVU153
+ 570 00ea FFF7FEFF 		bl	FW5_Clear
+ 571              	.LVL30:
+ 247:Core/Src/Detector/Code/FindX.c ****   }     
+ 572              		.loc 1 247 5 view .LVU154
+ 573              	.L28:
+ 249:Core/Src/Detector/Code/FindX.c **** 
+ 574              		.loc 1 249 1 is_stmt 0 view .LVU155
+ 575 00ee 10BD     		pop	{r4, pc}
+ 576              	.L34:
+ 577              		.align	2
+ 578              	.L33:
+ 579 00f0 00000000 		.word	.LANCHOR0
+ 580 00f4 00000000 		.word	.LANCHOR3
+ 581 00f8 00000000 		.word	.LANCHOR1
+ 582 00fc 00000000 		.word	.LANCHOR2
+ 583              		.cfi_endproc
+ 584              	.LFE4:
+ 586              		.section	.text.FW5_Find,"ax",%progbits
+ 587              		.align	1
+ 588              		.global	FW5_Find
+ 589              		.syntax unified
+ 590              		.thumb
+ 591              		.thumb_func
+ 592              		.fpu fpv4-sp-d16
+ 594              	FW5_Find:
+ 595              	.LVL31:
+ 596              	.LFB8:
+ 297:Core/Src/Detector/Code/FindX.c **** 
+ 298:Core/Src/Detector/Code/FindX.c **** 
+ 299:Core/Src/Detector/Code/FindX.c **** // Поисковый алгоритм       
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 18
+
+
+ 300:Core/Src/Detector/Code/FindX.c **** void FW5_Find(uint16_t *Out, float *CRM) {
+ 597              		.loc 1 300 42 is_stmt 1 view -0
+ 598              		.cfi_startproc
+ 599              		@ args = 0, pretend = 0, frame = 0
+ 600              		@ frame_needed = 0, uses_anonymous_args = 0
+ 601              		.loc 1 300 42 is_stmt 0 view .LVU157
+ 602 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 603              	.LCFI5:
+ 604              		.cfi_def_cfa_offset 20
+ 605              		.cfi_offset 4, -20
+ 606              		.cfi_offset 5, -16
+ 607              		.cfi_offset 6, -12
+ 608              		.cfi_offset 7, -8
+ 609              		.cfi_offset 14, -4
+ 301:Core/Src/Detector/Code/FindX.c ****   
+ 302:Core/Src/Detector/Code/FindX.c ****  uint8_t i;
+ 610              		.loc 1 302 2 is_stmt 1 view .LVU158
+ 303:Core/Src/Detector/Code/FindX.c ****  uint8_t ReadIndex; 
+ 611              		.loc 1 303 2 view .LVU159
+ 304:Core/Src/Detector/Code/FindX.c ****  uint32_t Ni;
+ 612              		.loc 1 304 2 view .LVU160
+ 305:Core/Src/Detector/Code/FindX.c ****  uint32_t SNi;
+ 613              		.loc 1 305 2 view .LVU161
+ 306:Core/Src/Detector/Code/FindX.c ****  uint32_t Result;
+ 614              		.loc 1 306 2 view .LVU162
+ 307:Core/Src/Detector/Code/FindX.c ****  uint16_t  TimeMask;
+ 615              		.loc 1 307 2 view .LVU163
+ 308:Core/Src/Detector/Code/FindX.c ****  uint16_t  IndexResult;
+ 616              		.loc 1 308 2 view .LVU164
+ 309:Core/Src/Detector/Code/FindX.c ****  
+ 310:Core/Src/Detector/Code/FindX.c ****  static uint16_t  SDTi;
+ 617              		.loc 1 310 2 view .LVU165
+ 311:Core/Src/Detector/Code/FindX.c ****  static float  Sours_cpsi;
+ 618              		.loc 1 311 2 view .LVU166
+ 312:Core/Src/Detector/Code/FindX.c ****  static float  Porog_cpsi;
+ 619              		.loc 1 312 2 view .LVU167
+ 313:Core/Src/Detector/Code/FindX.c ****  static float  K, Kmax;
+ 620              		.loc 1 313 2 view .LVU168
+ 314:Core/Src/Detector/Code/FindX.c ****  
+ 315:Core/Src/Detector/Code/FindX.c ****  
+ 316:Core/Src/Detector/Code/FindX.c ****  // Чтение данных 
+ 317:Core/Src/Detector/Code/FindX.c ****  ReadIndex  = FW5Data.ReadIndex;
+ 621              		.loc 1 317 2 view .LVU169
+ 622              	.LVL32:
+ 318:Core/Src/Detector/Code/FindX.c ****   
+ 319:Core/Src/Detector/Code/FindX.c ****  // Инициализация алгоритма
+ 320:Core/Src/Detector/Code/FindX.c ****  Result=0; SNi=0; SDTi=1; K=0; Kmax=0;
+ 623              		.loc 1 320 2 view .LVU170
+ 624              		.loc 1 320 12 view .LVU171
+ 625              		.loc 1 320 19 view .LVU172
+ 626              		.loc 1 320 23 is_stmt 0 view .LVU173
+ 627 0002 0122     		movs	r2, #1
+ 628 0004 404B     		ldr	r3, .L49
+ 629 0006 1A80     		strh	r2, [r3]	@ movhi
+ 630              		.loc 1 320 27 is_stmt 1 view .LVU174
+ 631              		.loc 1 320 28 is_stmt 0 view .LVU175
+ 632 0008 0023     		movs	r3, #0
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 19
+
+
+ 633 000a 404C     		ldr	r4, .L49+4
+ 634 000c 2360     		str	r3, [r4]	@ float
+ 635              		.loc 1 320 32 is_stmt 1 view .LVU176
+ 636              		.loc 1 320 36 is_stmt 0 view .LVU177
+ 637 000e 404C     		ldr	r4, .L49+8
+ 638 0010 2360     		str	r3, [r4]	@ float
+ 321:Core/Src/Detector/Code/FindX.c ****  
+ 322:Core/Src/Detector/Code/FindX.c ****  // Анализ первой ячейки интегрирования
+ 323:Core/Src/Detector/Code/FindX.c ****  IndexResult=1; 
+ 639              		.loc 1 323 2 is_stmt 1 view .LVU178
+ 640              	.LVL33:
+ 324:Core/Src/Detector/Code/FindX.c ****  TimeMask=iMaskFind; 
+ 641              		.loc 1 324 2 view .LVU179
+ 325:Core/Src/Detector/Code/FindX.c ****  
+ 326:Core/Src/Detector/Code/FindX.c ****  // Расчет
+ 327:Core/Src/Detector/Code/FindX.c ****  for (i=0;i<TFW5_SizeOfBuff;i++) {
+ 642              		.loc 1 327 2 view .LVU180
+ 324:Core/Src/Detector/Code/FindX.c ****  TimeMask=iMaskFind; 
+ 643              		.loc 1 324 10 is_stmt 0 view .LVU181
+ 644 0012 4FF6FF7E 		movw	lr, #65535
+ 320:Core/Src/Detector/Code/FindX.c ****  
+ 645              		.loc 1 320 8 view .LVU182
+ 646 0016 0026     		movs	r6, #0
+ 320:Core/Src/Detector/Code/FindX.c ****  
+ 647              		.loc 1 320 15 view .LVU183
+ 648 0018 3546     		mov	r5, r6
+ 649              		.loc 1 327 8 view .LVU184
+ 650 001a 3346     		mov	r3, r6
+ 651              		.loc 1 327 2 view .LVU185
+ 652 001c 0FE0     		b	.L36
+ 653              	.LVL34:
+ 654              	.L43:
+ 328:Core/Src/Detector/Code/FindX.c ****    
+ 329:Core/Src/Detector/Code/FindX.c ****       // Расчет индекса 
+ 330:Core/Src/Detector/Code/FindX.c ****       --ReadIndex; 
+ 331:Core/Src/Detector/Code/FindX.c ****       ReadIndex &=TFW5_BuffClear;
+ 332:Core/Src/Detector/Code/FindX.c ****       
+ 333:Core/Src/Detector/Code/FindX.c ****       // Ni
+ 334:Core/Src/Detector/Code/FindX.c ****       Ni=FW5Data.BuffCount[i];
+ 335:Core/Src/Detector/Code/FindX.c ****       
+ 336:Core/Src/Detector/Code/FindX.c ****       // SNi
+ 337:Core/Src/Detector/Code/FindX.c ****       SNi+=Ni;
+ 338:Core/Src/Detector/Code/FindX.c ****       
+ 339:Core/Src/Detector/Code/FindX.c ****       // Time Mask 
+ 340:Core/Src/Detector/Code/FindX.c ****       if (TimeMask&0x0001) { // Maska
+ 341:Core/Src/Detector/Code/FindX.c ****         
+ 342:Core/Src/Detector/Code/FindX.c ****       // Сравнение с порогом
+ 343:Core/Src/Detector/Code/FindX.c ****       if (SNi>4) {
+ 344:Core/Src/Detector/Code/FindX.c ****               // Расчет Sours_cpsi  
+ 345:Core/Src/Detector/Code/FindX.c ****               Sours_cpsi = (float)SNi;
+ 346:Core/Src/Detector/Code/FindX.c ****               Sours_cpsi /= SDTi; 
+ 347:Core/Src/Detector/Code/FindX.c ****               if (Sours_cpsi > FW5Data.Dt_nFona_cps) {
+ 348:Core/Src/Detector/Code/FindX.c ****                   // Вычитание фона
+ 349:Core/Src/Detector/Code/FindX.c ****                   Sours_cpsi -= FW5Data.Dt_nFona_cps;
+ 350:Core/Src/Detector/Code/FindX.c ****                   // Porog
+ 351:Core/Src/Detector/Code/FindX.c ****                   Porog_cpsi = FW5Data.Dt_RF_PorogCPS[i];
+ 352:Core/Src/Detector/Code/FindX.c ****                   Porog_cpsi *= (SNi>120) ? Kst[120] : Kst[SNi];
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 20
+
+
+ 655              		.loc 1 352 54 view .LVU186
+ 656 001e F7EE006A 		vmov.f32	s13, #1.0e+0
+ 657 0022 4CE0     		b	.L39
+ 658              	.L37:
+ 353:Core/Src/Detector/Code/FindX.c ****                   //  Сравнение с порогом   
+ 354:Core/Src/Detector/Code/FindX.c ****                   if (Sours_cpsi>Porog_cpsi) { 
+ 355:Core/Src/Detector/Code/FindX.c ****                     // Данные по превышению  
+ 356:Core/Src/Detector/Code/FindX.c ****                     Result |=IndexResult;
+ 357:Core/Src/Detector/Code/FindX.c ****                     // Максимальное значение превышения скорости счета
+ 358:Core/Src/Detector/Code/FindX.c ****                     if ((Result&8)==8) {
+ 359:Core/Src/Detector/Code/FindX.c ****                           K  = (float) Sours_cpsi;
+ 360:Core/Src/Detector/Code/FindX.c ****                           K /= Porog_cpsi;
+ 361:Core/Src/Detector/Code/FindX.c ****                           if (K>Kmax) Kmax = K;   
+ 362:Core/Src/Detector/Code/FindX.c ****                     } // Buzer
+ 363:Core/Src/Detector/Code/FindX.c ****                   }  // >Porog 
+ 364:Core/Src/Detector/Code/FindX.c ****               } // > Fon[j], j-окно  
+ 365:Core/Src/Detector/Code/FindX.c ****           } // SNi>4
+ 366:Core/Src/Detector/Code/FindX.c ****       } // Maska
+ 367:Core/Src/Detector/Code/FindX.c ****       
+ 368:Core/Src/Detector/Code/FindX.c ****       // Следующая ячейка интегрирования
+ 369:Core/Src/Detector/Code/FindX.c ****       SDTi +=1;
+ 659              		.loc 1 369 7 is_stmt 1 discriminator 2 view .LVU187
+ 660              		.loc 1 369 12 is_stmt 0 discriminator 2 view .LVU188
+ 661 0024 384C     		ldr	r4, .L49
+ 662 0026 B4F800C0 		ldrh	ip, [r4]
+ 663 002a 0CF1010C 		add	ip, ip, #1
+ 664 002e A4F800C0 		strh	ip, [r4]	@ movhi
+ 370:Core/Src/Detector/Code/FindX.c ****       TimeMask>>=1;
+ 665              		.loc 1 370 7 is_stmt 1 discriminator 2 view .LVU189
+ 666              		.loc 1 370 15 is_stmt 0 discriminator 2 view .LVU190
+ 667 0032 4FEA5E0E 		lsr	lr, lr, #1
+ 668              	.LVL35:
+ 371:Core/Src/Detector/Code/FindX.c ****       IndexResult<<=1; 
+ 669              		.loc 1 371 7 is_stmt 1 discriminator 2 view .LVU191
+ 670              		.loc 1 371 18 is_stmt 0 discriminator 2 view .LVU192
+ 671 0036 5200     		lsls	r2, r2, #1
+ 672              	.LVL36:
+ 673              		.loc 1 371 18 discriminator 2 view .LVU193
+ 674 0038 92B2     		uxth	r2, r2
+ 675              	.LVL37:
+ 327:Core/Src/Detector/Code/FindX.c ****    
+ 676              		.loc 1 327 29 is_stmt 1 discriminator 2 view .LVU194
+ 327:Core/Src/Detector/Code/FindX.c ****    
+ 677              		.loc 1 327 30 is_stmt 0 discriminator 2 view .LVU195
+ 678 003a 0133     		adds	r3, r3, #1
+ 679              	.LVL38:
+ 327:Core/Src/Detector/Code/FindX.c ****    
+ 680              		.loc 1 327 30 discriminator 2 view .LVU196
+ 681 003c DBB2     		uxtb	r3, r3
+ 682              	.LVL39:
+ 683              	.L36:
+ 327:Core/Src/Detector/Code/FindX.c ****    
+ 684              		.loc 1 327 11 is_stmt 1 discriminator 1 view .LVU197
+ 327:Core/Src/Detector/Code/FindX.c ****    
+ 685              		.loc 1 327 2 is_stmt 0 discriminator 1 view .LVU198
+ 686 003e 0F2B     		cmp	r3, #15
+ 687 0040 5DD8     		bhi	.L48
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 21
+
+
+ 330:Core/Src/Detector/Code/FindX.c ****       ReadIndex &=TFW5_BuffClear;
+ 688              		.loc 1 330 7 is_stmt 1 view .LVU199
+ 331:Core/Src/Detector/Code/FindX.c ****       
+ 689              		.loc 1 331 7 view .LVU200
+ 334:Core/Src/Detector/Code/FindX.c ****       
+ 690              		.loc 1 334 7 view .LVU201
+ 334:Core/Src/Detector/Code/FindX.c ****       
+ 691              		.loc 1 334 27 is_stmt 0 view .LVU202
+ 692 0042 1F46     		mov	r7, r3
+ 334:Core/Src/Detector/Code/FindX.c ****       
+ 693              		.loc 1 334 9 view .LVU203
+ 694 0044 03F1120C 		add	ip, r3, #18
+ 695 0048 324C     		ldr	r4, .L49+12
+ 696 004a 04EB8C0C 		add	ip, r4, ip, lsl #2
+ 697 004e DCF80440 		ldr	r4, [ip, #4]
+ 698              	.LVL40:
+ 337:Core/Src/Detector/Code/FindX.c ****       
+ 699              		.loc 1 337 7 is_stmt 1 view .LVU204
+ 337:Core/Src/Detector/Code/FindX.c ****       
+ 700              		.loc 1 337 10 is_stmt 0 view .LVU205
+ 701 0052 2544     		add	r5, r5, r4
+ 702              	.LVL41:
+ 340:Core/Src/Detector/Code/FindX.c ****         
+ 703              		.loc 1 340 7 is_stmt 1 view .LVU206
+ 340:Core/Src/Detector/Code/FindX.c ****         
+ 704              		.loc 1 340 10 is_stmt 0 view .LVU207
+ 705 0054 1EF0010F 		tst	lr, #1
+ 706 0058 E4D0     		beq	.L37
+ 343:Core/Src/Detector/Code/FindX.c ****               // Расчет Sours_cpsi  
+ 707              		.loc 1 343 7 is_stmt 1 view .LVU208
+ 343:Core/Src/Detector/Code/FindX.c ****               // Расчет Sours_cpsi  
+ 708              		.loc 1 343 10 is_stmt 0 view .LVU209
+ 709 005a 042D     		cmp	r5, #4
+ 710 005c E2D9     		bls	.L37
+ 345:Core/Src/Detector/Code/FindX.c ****               Sours_cpsi /= SDTi; 
+ 711              		.loc 1 345 15 is_stmt 1 view .LVU210
+ 345:Core/Src/Detector/Code/FindX.c ****               Sours_cpsi /= SDTi; 
+ 712              		.loc 1 345 28 is_stmt 0 view .LVU211
+ 713 005e 07EE905A 		vmov	s15, r5	@ int
+ 714 0062 B8EE677A 		vcvt.f32.u32	s14, s15
+ 345:Core/Src/Detector/Code/FindX.c ****               Sours_cpsi /= SDTi; 
+ 715              		.loc 1 345 26 view .LVU212
+ 716 0066 2C4C     		ldr	r4, .L49+16
+ 717              	.LVL42:
+ 345:Core/Src/Detector/Code/FindX.c ****               Sours_cpsi /= SDTi; 
+ 718              		.loc 1 345 26 view .LVU213
+ 719 0068 84ED007A 		vstr.32	s14, [r4]
+ 346:Core/Src/Detector/Code/FindX.c ****               if (Sours_cpsi > FW5Data.Dt_nFona_cps) {
+ 720              		.loc 1 346 15 is_stmt 1 view .LVU214
+ 346:Core/Src/Detector/Code/FindX.c ****               if (Sours_cpsi > FW5Data.Dt_nFona_cps) {
+ 721              		.loc 1 346 26 is_stmt 0 view .LVU215
+ 722 006c DFF898C0 		ldr	ip, .L49
+ 723              	.LVL43:
+ 346:Core/Src/Detector/Code/FindX.c ****               if (Sours_cpsi > FW5Data.Dt_nFona_cps) {
+ 724              		.loc 1 346 26 view .LVU216
+ 725 0070 BCF800C0 		ldrh	ip, [ip]
+ 726 0074 06EE90CA 		vmov	s13, ip	@ int
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 22
+
+
+ 727 0078 F8EEE66A 		vcvt.f32.s32	s13, s13
+ 728 007c C7EE267A 		vdiv.f32	s15, s14, s13
+ 729 0080 C4ED007A 		vstr.32	s15, [r4]
+ 347:Core/Src/Detector/Code/FindX.c ****                   // Вычитание фона
+ 730              		.loc 1 347 15 is_stmt 1 view .LVU217
+ 347:Core/Src/Detector/Code/FindX.c ****                   // Вычитание фона
+ 731              		.loc 1 347 39 is_stmt 0 view .LVU218
+ 732 0084 234C     		ldr	r4, .L49+12
+ 733              	.LVL44:
+ 347:Core/Src/Detector/Code/FindX.c ****                   // Вычитание фона
+ 734              		.loc 1 347 39 view .LVU219
+ 735 0086 94ED027A 		vldr.32	s14, [r4, #8]
+ 347:Core/Src/Detector/Code/FindX.c ****                   // Вычитание фона
+ 736              		.loc 1 347 18 view .LVU220
+ 737 008a F4EEC77A 		vcmpe.f32	s15, s14
+ 738 008e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 739 0092 C7DD     		ble	.L37
+ 349:Core/Src/Detector/Code/FindX.c ****                   // Porog
+ 740              		.loc 1 349 19 is_stmt 1 view .LVU221
+ 349:Core/Src/Detector/Code/FindX.c ****                   // Porog
+ 741              		.loc 1 349 30 is_stmt 0 view .LVU222
+ 742 0094 77EEC77A 		vsub.f32	s15, s15, s14
+ 743 0098 1F4C     		ldr	r4, .L49+16
+ 744              	.LVL45:
+ 349:Core/Src/Detector/Code/FindX.c ****                   // Porog
+ 745              		.loc 1 349 30 view .LVU223
+ 746 009a C4ED007A 		vstr.32	s15, [r4]
+ 351:Core/Src/Detector/Code/FindX.c ****                   Porog_cpsi *= (SNi>120) ? Kst[120] : Kst[SNi];
+ 747              		.loc 1 351 19 is_stmt 1 view .LVU224
+ 351:Core/Src/Detector/Code/FindX.c ****                   Porog_cpsi *= (SNi>120) ? Kst[120] : Kst[SNi];
+ 748              		.loc 1 351 54 is_stmt 0 view .LVU225
+ 749 009e 0237     		adds	r7, r7, #2
+ 750 00a0 1C4C     		ldr	r4, .L49+12
+ 751              	.LVL46:
+ 351:Core/Src/Detector/Code/FindX.c ****                   Porog_cpsi *= (SNi>120) ? Kst[120] : Kst[SNi];
+ 752              		.loc 1 351 54 view .LVU226
+ 753 00a2 04EB8707 		add	r7, r4, r7, lsl #2
+ 754 00a6 97ED017A 		vldr.32	s14, [r7, #4]
+ 351:Core/Src/Detector/Code/FindX.c ****                   Porog_cpsi *= (SNi>120) ? Kst[120] : Kst[SNi];
+ 755              		.loc 1 351 30 view .LVU227
+ 756 00aa 1C4C     		ldr	r4, .L49+20
+ 757              	.LVL47:
+ 351:Core/Src/Detector/Code/FindX.c ****                   Porog_cpsi *= (SNi>120) ? Kst[120] : Kst[SNi];
+ 758              		.loc 1 351 30 view .LVU228
+ 759 00ac 84ED007A 		vstr.32	s14, [r4]
+ 352:Core/Src/Detector/Code/FindX.c ****                   //  Сравнение с порогом   
+ 760              		.loc 1 352 19 is_stmt 1 view .LVU229
+ 352:Core/Src/Detector/Code/FindX.c ****                   //  Сравнение с порогом   
+ 761              		.loc 1 352 54 is_stmt 0 view .LVU230
+ 762 00b0 782D     		cmp	r5, #120
+ 763 00b2 B4D8     		bhi	.L43
+ 352:Core/Src/Detector/Code/FindX.c ****                   //  Сравнение с порогом   
+ 764              		.loc 1 352 54 discriminator 2 view .LVU231
+ 765 00b4 1A4C     		ldr	r4, .L49+24
+ 766 00b6 04EB8504 		add	r4, r4, r5, lsl #2
+ 767 00ba D4ED006A 		vldr.32	s13, [r4]
+ 768              	.L39:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 23
+
+
+ 352:Core/Src/Detector/Code/FindX.c ****                   //  Сравнение с порогом   
+ 769              		.loc 1 352 30 discriminator 4 view .LVU232
+ 770 00be 27EE267A 		vmul.f32	s14, s14, s13
+ 771 00c2 164C     		ldr	r4, .L49+20
+ 772 00c4 84ED007A 		vstr.32	s14, [r4]
+ 354:Core/Src/Detector/Code/FindX.c ****                     // Данные по превышению  
+ 773              		.loc 1 354 19 is_stmt 1 discriminator 4 view .LVU233
+ 354:Core/Src/Detector/Code/FindX.c ****                     // Данные по превышению  
+ 774              		.loc 1 354 22 is_stmt 0 discriminator 4 view .LVU234
+ 775 00c8 F4EEC77A 		vcmpe.f32	s15, s14
+ 776 00cc F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 777 00d0 A8DD     		ble	.L37
+ 356:Core/Src/Detector/Code/FindX.c ****                     // Максимальное значение превышения скорости счета
+ 778              		.loc 1 356 21 is_stmt 1 view .LVU235
+ 356:Core/Src/Detector/Code/FindX.c ****                     // Максимальное значение превышения скорости счета
+ 779              		.loc 1 356 28 is_stmt 0 view .LVU236
+ 780 00d2 1643     		orrs	r6, r6, r2
+ 781              	.LVL48:
+ 358:Core/Src/Detector/Code/FindX.c ****                           K  = (float) Sours_cpsi;
+ 782              		.loc 1 358 21 is_stmt 1 view .LVU237
+ 358:Core/Src/Detector/Code/FindX.c ****                           K  = (float) Sours_cpsi;
+ 783              		.loc 1 358 24 is_stmt 0 view .LVU238
+ 784 00d4 16F0080F 		tst	r6, #8
+ 785 00d8 A4D0     		beq	.L37
+ 359:Core/Src/Detector/Code/FindX.c ****                           K /= Porog_cpsi;
+ 786              		.loc 1 359 27 is_stmt 1 view .LVU239
+ 359:Core/Src/Detector/Code/FindX.c ****                           K /= Porog_cpsi;
+ 787              		.loc 1 359 30 is_stmt 0 view .LVU240
+ 788 00da 0C4C     		ldr	r4, .L49+4
+ 789 00dc C4ED007A 		vstr.32	s15, [r4]
+ 360:Core/Src/Detector/Code/FindX.c ****                           if (K>Kmax) Kmax = K;   
+ 790              		.loc 1 360 27 is_stmt 1 view .LVU241
+ 360:Core/Src/Detector/Code/FindX.c ****                           if (K>Kmax) Kmax = K;   
+ 791              		.loc 1 360 29 is_stmt 0 view .LVU242
+ 792 00e0 C7EE876A 		vdiv.f32	s13, s15, s14
+ 793 00e4 C4ED006A 		vstr.32	s13, [r4]
+ 361:Core/Src/Detector/Code/FindX.c ****                     } // Buzer
+ 794              		.loc 1 361 27 is_stmt 1 view .LVU243
+ 361:Core/Src/Detector/Code/FindX.c ****                     } // Buzer
+ 795              		.loc 1 361 32 is_stmt 0 view .LVU244
+ 796 00e8 094C     		ldr	r4, .L49+8
+ 797 00ea D4ED007A 		vldr.32	s15, [r4]
+ 361:Core/Src/Detector/Code/FindX.c ****                     } // Buzer
+ 798              		.loc 1 361 30 view .LVU245
+ 799 00ee F4EEE76A 		vcmpe.f32	s13, s15
+ 800 00f2 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 801 00f6 95DD     		ble	.L37
+ 361:Core/Src/Detector/Code/FindX.c ****                     } // Buzer
+ 802              		.loc 1 361 39 is_stmt 1 discriminator 1 view .LVU246
+ 361:Core/Src/Detector/Code/FindX.c ****                     } // Buzer
+ 803              		.loc 1 361 44 is_stmt 0 discriminator 1 view .LVU247
+ 804 00f8 C4ED006A 		vstr.32	s13, [r4]
+ 805 00fc 92E7     		b	.L37
+ 806              	.LVL49:
+ 807              	.L48:
+ 372:Core/Src/Detector/Code/FindX.c ****  }
+ 373:Core/Src/Detector/Code/FindX.c ****  
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 24
+
+
+ 374:Core/Src/Detector/Code/FindX.c ****  // Вывод
+ 375:Core/Src/Detector/Code/FindX.c ****  *CRM  = Kmax;
+ 808              		.loc 1 375 2 is_stmt 1 view .LVU248
+ 809              		.loc 1 375 8 is_stmt 0 view .LVU249
+ 810 00fe 044B     		ldr	r3, .L49+8
+ 811              	.LVL50:
+ 812              		.loc 1 375 8 view .LVU250
+ 813 0100 1B68     		ldr	r3, [r3]	@ float
+ 814 0102 0B60     		str	r3, [r1]	@ float
+ 376:Core/Src/Detector/Code/FindX.c ****  *Out=Result;
+ 815              		.loc 1 376 2 is_stmt 1 view .LVU251
+ 816              		.loc 1 376 6 is_stmt 0 view .LVU252
+ 817 0104 0680     		strh	r6, [r0]	@ movhi
+ 377:Core/Src/Detector/Code/FindX.c **** }
+ 818              		.loc 1 377 1 view .LVU253
+ 819 0106 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 820              	.LVL51:
+ 821              	.L50:
+ 822              		.loc 1 377 1 view .LVU254
+ 823              		.align	2
+ 824              	.L49:
+ 825 0108 00000000 		.word	.LANCHOR4
+ 826 010c 00000000 		.word	.LANCHOR5
+ 827 0110 00000000 		.word	.LANCHOR6
+ 828 0114 00000000 		.word	.LANCHOR0
+ 829 0118 00000000 		.word	.LANCHOR7
+ 830 011c 00000000 		.word	.LANCHOR8
+ 831 0120 00000000 		.word	.LANCHOR9
+ 832              		.cfi_endproc
+ 833              	.LFE8:
+ 835              		.section	.text.FW5_G5Find,"ax",%progbits
+ 836              		.align	1
+ 837              		.global	FW5_G5Find
+ 838              		.syntax unified
+ 839              		.thumb
+ 840              		.thumb_func
+ 841              		.fpu fpv4-sp-d16
+ 843              	FW5_G5Find:
+ 844              	.LVL52:
+ 845              	.LFB9:
+ 378:Core/Src/Detector/Code/FindX.c **** 
+ 379:Core/Src/Detector/Code/FindX.c **** 
+ 380:Core/Src/Detector/Code/FindX.c **** // Поисковый алгоритм       
+ 381:Core/Src/Detector/Code/FindX.c **** uint8_t FW5_G5Find(uint16_t *Out, float *CRM) {
+ 846              		.loc 1 381 47 is_stmt 1 view -0
+ 847              		.cfi_startproc
+ 848              		@ args = 0, pretend = 0, frame = 8
+ 849              		@ frame_needed = 0, uses_anonymous_args = 0
+ 382:Core/Src/Detector/Code/FindX.c ****   
+ 383:Core/Src/Detector/Code/FindX.c ****   float _crm,crm_max;
+ 850              		.loc 1 383 3 view .LVU256
+ 384:Core/Src/Detector/Code/FindX.c ****   uint16_t out_max; 
+ 851              		.loc 1 384 3 view .LVU257
+ 385:Core/Src/Detector/Code/FindX.c ****   
+ 386:Core/Src/Detector/Code/FindX.c ****   crm_max = 1; out_max  = 0;
+ 852              		.loc 1 386 3 view .LVU258
+ 853              		.loc 1 386 16 view .LVU259
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 25
+
+
+ 387:Core/Src/Detector/Code/FindX.c ****   *Out = out_max; *CRM = crm_max;
+ 854              		.loc 1 387 3 view .LVU260
+ 855              		.loc 1 387 8 is_stmt 0 view .LVU261
+ 856 0000 0023     		movs	r3, #0
+ 857 0002 0380     		strh	r3, [r0]	@ movhi
+ 858              		.loc 1 387 19 is_stmt 1 view .LVU262
+ 859              		.loc 1 387 24 is_stmt 0 view .LVU263
+ 860 0004 4FF07E53 		mov	r3, #1065353216
+ 861 0008 0B60     		str	r3, [r1]	@ float
+ 388:Core/Src/Detector/Code/FindX.c ****    
+ 389:Core/Src/Detector/Code/FindX.c ****   if (FW5Data.Valid==0) return 0; 
+ 862              		.loc 1 389 3 is_stmt 1 view .LVU264
+ 863              		.loc 1 389 14 is_stmt 0 view .LVU265
+ 864 000a 174B     		ldr	r3, .L61
+ 865 000c B3F89030 		ldrh	r3, [r3, #144]
+ 866              		.loc 1 389 6 view .LVU266
+ 867 0010 2BB3     		cbz	r3, .L54
+ 381:Core/Src/Detector/Code/FindX.c ****   
+ 868              		.loc 1 381 47 view .LVU267
+ 869 0012 70B5     		push	{r4, r5, r6, lr}
+ 870              	.LCFI6:
+ 871              		.cfi_def_cfa_offset 16
+ 872              		.cfi_offset 4, -16
+ 873              		.cfi_offset 5, -12
+ 874              		.cfi_offset 6, -8
+ 875              		.cfi_offset 14, -4
+ 876 0014 82B0     		sub	sp, sp, #8
+ 877              	.LCFI7:
+ 878              		.cfi_def_cfa_offset 24
+ 879 0016 0546     		mov	r5, r0
+ 880 0018 0C46     		mov	r4, r1
+ 390:Core/Src/Detector/Code/FindX.c ****  
+ 391:Core/Src/Detector/Code/FindX.c ****   // Если есть данные  
+ 392:Core/Src/Detector/Code/FindX.c ****   if (FW5Data.ReadIndex == FW5Data.WriteIndex) return 0; 
+ 881              		.loc 1 392 3 is_stmt 1 view .LVU268
+ 882              		.loc 1 392 14 is_stmt 0 view .LVU269
+ 883 001a 134B     		ldr	r3, .L61
+ 884 001c 93F88F20 		ldrb	r2, [r3, #143]	@ zero_extendqisi2
+ 885              		.loc 1 392 35 view .LVU270
+ 886 0020 93F88E30 		ldrb	r3, [r3, #142]	@ zero_extendqisi2
+ 887              		.loc 1 392 6 view .LVU271
+ 888 0024 9A42     		cmp	r2, r3
+ 889 0026 1CD0     		beq	.L55
+ 393:Core/Src/Detector/Code/FindX.c ****   
+ 394:Core/Src/Detector/Code/FindX.c ****   // Чтение данных   
+ 395:Core/Src/Detector/Code/FindX.c ****   FW5Data.ReadIndex  = FW5Data.WriteIndex;  
+ 890              		.loc 1 395 3 is_stmt 1 view .LVU272
+ 891              		.loc 1 395 22 is_stmt 0 view .LVU273
+ 892 0028 0F4A     		ldr	r2, .L61
+ 893 002a 82F88F30 		strb	r3, [r2, #143]
+ 396:Core/Src/Detector/Code/FindX.c ****   
+ 397:Core/Src/Detector/Code/FindX.c **** 
+ 398:Core/Src/Detector/Code/FindX.c ****   FW5_Find(&_out,&_crm);
+ 894              		.loc 1 398 3 is_stmt 1 view .LVU274
+ 895 002e 0F4E     		ldr	r6, .L61+4
+ 896 0030 01A9     		add	r1, sp, #4
+ 897              	.LVL53:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 26
+
+
+ 898              		.loc 1 398 3 is_stmt 0 view .LVU275
+ 899 0032 3046     		mov	r0, r6
+ 900              	.LVL54:
+ 901              		.loc 1 398 3 view .LVU276
+ 902 0034 FFF7FEFF 		bl	FW5_Find
+ 903              	.LVL55:
+ 399:Core/Src/Detector/Code/FindX.c ****   out_max |= _out; 
+ 904              		.loc 1 399 3 is_stmt 1 view .LVU277
+ 905              		.loc 1 399 11 is_stmt 0 view .LVU278
+ 906 0038 3388     		ldrh	r3, [r6]
+ 907              	.LVL56:
+ 400:Core/Src/Detector/Code/FindX.c ****   if (_crm>crm_max) crm_max =_crm;   
+ 908              		.loc 1 400 3 is_stmt 1 view .LVU279
+ 909              		.loc 1 400 11 is_stmt 0 view .LVU280
+ 910 003a DDED017A 		vldr.32	s15, [sp, #4]
+ 911              		.loc 1 400 6 view .LVU281
+ 912 003e B7EE007A 		vmov.f32	s14, #1.0e+0
+ 913 0042 F4EEC77A 		vcmpe.f32	s15, s14
+ 914 0046 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 915 004a 05DD     		ble	.L60
+ 916              	.L53:
+ 917              	.LVL57:
+ 401:Core/Src/Detector/Code/FindX.c ****   
+ 402:Core/Src/Detector/Code/FindX.c **** 
+ 403:Core/Src/Detector/Code/FindX.c ****   // Out
+ 404:Core/Src/Detector/Code/FindX.c ****   *Out = out_max;
+ 918              		.loc 1 404 3 is_stmt 1 view .LVU282
+ 919              		.loc 1 404 8 is_stmt 0 view .LVU283
+ 920 004c 2B80     		strh	r3, [r5]	@ movhi
+ 405:Core/Src/Detector/Code/FindX.c ****   *CRM = crm_max;
+ 921              		.loc 1 405 3 is_stmt 1 view .LVU284
+ 922              		.loc 1 405 8 is_stmt 0 view .LVU285
+ 923 004e C4ED007A 		vstr.32	s15, [r4]
+ 406:Core/Src/Detector/Code/FindX.c ****   
+ 407:Core/Src/Detector/Code/FindX.c ****   return 1;
+ 924              		.loc 1 407 3 is_stmt 1 view .LVU286
+ 925              		.loc 1 407 10 is_stmt 0 view .LVU287
+ 926 0052 0120     		movs	r0, #1
+ 927              	.LVL58:
+ 928              	.L52:
+ 408:Core/Src/Detector/Code/FindX.c **** 
+ 409:Core/Src/Detector/Code/FindX.c **** }
+ 929              		.loc 1 409 1 view .LVU288
+ 930 0054 02B0     		add	sp, sp, #8
+ 931              	.LCFI8:
+ 932              		.cfi_remember_state
+ 933              		.cfi_def_cfa_offset 16
+ 934              		@ sp needed
+ 935 0056 70BD     		pop	{r4, r5, r6, pc}
+ 936              	.LVL59:
+ 937              	.L60:
+ 938              	.LCFI9:
+ 939              		.cfi_restore_state
+ 386:Core/Src/Detector/Code/FindX.c ****   *Out = out_max; *CRM = crm_max;
+ 940              		.loc 1 386 11 view .LVU289
+ 941 0058 F0EE477A 		vmov.f32	s15, s14
+ 942 005c F6E7     		b	.L53
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 27
+
+
+ 943              	.LVL60:
+ 944              	.L54:
+ 945              	.LCFI10:
+ 946              		.cfi_def_cfa_offset 0
+ 947              		.cfi_restore 4
+ 948              		.cfi_restore 5
+ 949              		.cfi_restore 6
+ 950              		.cfi_restore 14
+ 389:Core/Src/Detector/Code/FindX.c ****  
+ 951              		.loc 1 389 32 view .LVU290
+ 952 005e 0020     		movs	r0, #0
+ 953              	.LVL61:
+ 954              		.loc 1 409 1 view .LVU291
+ 955 0060 7047     		bx	lr
+ 956              	.LVL62:
+ 957              	.L55:
+ 958              	.LCFI11:
+ 959              		.cfi_def_cfa_offset 24
+ 960              		.cfi_offset 4, -16
+ 961              		.cfi_offset 5, -12
+ 962              		.cfi_offset 6, -8
+ 963              		.cfi_offset 14, -4
+ 392:Core/Src/Detector/Code/FindX.c ****   
+ 964              		.loc 1 392 55 view .LVU292
+ 965 0062 0020     		movs	r0, #0
+ 966              	.LVL63:
+ 392:Core/Src/Detector/Code/FindX.c ****   
+ 967              		.loc 1 392 55 view .LVU293
+ 968 0064 F6E7     		b	.L52
+ 969              	.L62:
+ 970 0066 00BF     		.align	2
+ 971              	.L61:
+ 972 0068 00000000 		.word	.LANCHOR0
+ 973 006c 00000000 		.word	.LANCHOR10
+ 974              		.cfi_endproc
+ 975              	.LFE9:
+ 977              		.global	_out
+ 978              		.global	FW5Data
+ 979              		.global	Kst
+ 980              		.global	iMaskFind
+ 981              		.section	.bss.FW5Data,"aw",%nobits
+ 982              		.align	2
+ 983              		.set	.LANCHOR0,. + 0
+ 986              	FW5Data:
+ 987 0000 00000000 		.space	156
+ 987      00000000 
+ 987      00000000 
+ 987      00000000 
+ 987      00000000 
+ 988              		.section	.bss.Find_Sigma,"aw",%nobits
+ 989              		.align	2
+ 990              		.set	.LANCHOR2,. + 0
+ 993              	Find_Sigma:
+ 994 0000 00000000 		.space	4
+ 995              		.section	.bss.K.3,"aw",%nobits
+ 996              		.align	2
+ 997              		.set	.LANCHOR5,. + 0
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 28
+
+
+ 1000              	K.3:
+ 1001 0000 00000000 		.space	4
+ 1002              		.section	.bss.Kmax.2,"aw",%nobits
+ 1003              		.align	2
+ 1004              		.set	.LANCHOR6,. + 0
+ 1007              	Kmax.2:
+ 1008 0000 00000000 		.space	4
+ 1009              		.section	.bss.Porog_cpsi.0,"aw",%nobits
+ 1010              		.align	2
+ 1011              		.set	.LANCHOR8,. + 0
+ 1014              	Porog_cpsi.0:
+ 1015 0000 00000000 		.space	4
+ 1016              		.section	.bss.SDTi.4,"aw",%nobits
+ 1017              		.align	1
+ 1018              		.set	.LANCHOR4,. + 0
+ 1021              	SDTi.4:
+ 1022 0000 0000     		.space	2
+ 1023              		.section	.bss.Sours_cpsi.1,"aw",%nobits
+ 1024              		.align	2
+ 1025              		.set	.LANCHOR7,. + 0
+ 1028              	Sours_cpsi.1:
+ 1029 0000 00000000 		.space	4
+ 1030              		.section	.bss.TFW5_Tcall,"aw",%nobits
+ 1031              		.align	1
+ 1032              		.set	.LANCHOR1,. + 0
+ 1035              	TFW5_Tcall:
+ 1036 0000 0000     		.space	2
+ 1037              		.section	.bss._out,"aw",%nobits
+ 1038              		.align	1
+ 1039              		.set	.LANCHOR10,. + 0
+ 1042              	_out:
+ 1043 0000 0000     		.space	2
+ 1044              		.section	.bss.i.5,"aw",%nobits
+ 1045              		.align	1
+ 1046              		.set	.LANCHOR3,. + 0
+ 1049              	i.5:
+ 1050 0000 0000     		.space	2
+ 1051              		.section	.rodata.Kst,"a"
+ 1052              		.align	2
+ 1053              		.set	.LANCHOR9,. + 0
+ 1056              	Kst:
+ 1057 0000 984C4B41 		.word	1095453848
+ 1058 0004 B8AF8940 		.word	1082765240
+ 1059 0008 71AC4B40 		.word	1078701169
+ 1060 000c 8AB03140 		.word	1076998282
+ 1061 0010 B6842440 		.word	1076135094
+ 1062 0014 029A1C40 		.word	1075616258
+ 1063 0018 9B551740 		.word	1075271067
+ 1064 001c 81951340 		.word	1075025281
+ 1065 0020 E3C71040 		.word	1074841571
+ 1066 0024 31990E40 		.word	1074698545
+ 1067 0028 2FDD0C40 		.word	1074584879
+ 1068 002c 76710B40 		.word	1074491766
+ 1069 0030 FE430A40 		.word	1074414590
+ 1070 0034 67440940 		.word	1074349159
+ 1071 0038 DC680840 		.word	1074292956
+ 1072 003c 71AC0740 		.word	1074244721
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 29
+
+
+ 1073 0040 F7060740 		.word	1074202359
+ 1074 0044 25750640 		.word	1074165029
+ 1075 0048 B6F30540 		.word	1074131894
+ 1076 004c 06810540 		.word	1074102534
+ 1077 0050 2B180540 		.word	1074075691
+ 1078 0054 C7BA0440 		.word	1074051783
+ 1079 0058 95650440 		.word	1074029973
+ 1080 005c F0160440 		.word	1074009840
+ 1081 0060 D9CE0340 		.word	1073991385
+ 1082 0064 508D0340 		.word	1073974608
+ 1083 0068 B1500340 		.word	1073959089
+ 1084 006c FC180340 		.word	1073944828
+ 1085 0070 8FE40240 		.word	1073931407
+ 1086 0074 0BB50240 		.word	1073919243
+ 1087 0078 29ED0140 		.word	1073868073
+ 1088 007c 29ED0140 		.word	1073868073
+ 1089 0080 29ED0140 		.word	1073868073
+ 1090 0084 29ED0140 		.word	1073868073
+ 1091 0088 29ED0140 		.word	1073868073
+ 1092 008c 29ED0140 		.word	1073868073
+ 1093 0090 29ED0140 		.word	1073868073
+ 1094 0094 29ED0140 		.word	1073868073
+ 1095 0098 29ED0140 		.word	1073868073
+ 1096 009c B4590140 		.word	1073830324
+ 1097 00a0 B4590140 		.word	1073830324
+ 1098 00a4 B4590140 		.word	1073830324
+ 1099 00a8 B4590140 		.word	1073830324
+ 1100 00ac B4590140 		.word	1073830324
+ 1101 00b0 04E70040 		.word	1073800964
+ 1102 00b4 04E70040 		.word	1073800964
+ 1103 00b8 04E70040 		.word	1073800964
+ 1104 00bc 04E70040 		.word	1073800964
+ 1105 00c0 04E70040 		.word	1073800964
+ 1106 00c4 E78C0040 		.word	1073777895
+ 1107 00c8 E78C0040 		.word	1073777895
+ 1108 00cc E78C0040 		.word	1073777895
+ 1109 00d0 E78C0040 		.word	1073777895
+ 1110 00d4 E78C0040 		.word	1073777895
+ 1111 00d8 89410040 		.word	1073758601
+ 1112 00dc 89410040 		.word	1073758601
+ 1113 00e0 89410040 		.word	1073758601
+ 1114 00e4 89410040 		.word	1073758601
+ 1115 00e8 89410040 		.word	1073758601
+ 1116 00ec EA040040 		.word	1073743082
+ 1117 00f0 EA040040 		.word	1073743082
+ 1118 00f4 EA040040 		.word	1073743082
+ 1119 00f8 EA040040 		.word	1073743082
+ 1120 00fc EA040040 		.word	1073743082
+ 1121 0100 EA040040 		.word	1073743082
+ 1122 0104 EA040040 		.word	1073743082
+ 1123 0108 EA040040 		.word	1073743082
+ 1124 010c EA040040 		.word	1073743082
+ 1125 0110 EA040040 		.word	1073743082
+ 1126 0114 8048FF3F 		.word	1073694848
+ 1127 0118 8048FF3F 		.word	1073694848
+ 1128 011c 8048FF3F 		.word	1073694848
+ 1129 0120 8048FF3F 		.word	1073694848
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 30
+
+
+ 1130 0124 8048FF3F 		.word	1073694848
+ 1131 0128 8048FF3F 		.word	1073694848
+ 1132 012c 8048FF3F 		.word	1073694848
+ 1133 0130 8048FF3F 		.word	1073694848
+ 1134 0134 8048FF3F 		.word	1073694848
+ 1135 0138 8048FF3F 		.word	1073694848
+ 1136 013c 99BBFE3F 		.word	1073658777
+ 1137 0140 99BBFE3F 		.word	1073658777
+ 1138 0144 99BBFE3F 		.word	1073658777
+ 1139 0148 99BBFE3F 		.word	1073658777
+ 1140 014c 99BBFE3F 		.word	1073658777
+ 1141 0150 99BBFE3F 		.word	1073658777
+ 1142 0154 99BBFE3F 		.word	1073658777
+ 1143 0158 99BBFE3F 		.word	1073658777
+ 1144 015c 99BBFE3F 		.word	1073658777
+ 1145 0160 99BBFE3F 		.word	1073658777
+ 1146 0164 304CFE3F 		.word	1073630256
+ 1147 0168 304CFE3F 		.word	1073630256
+ 1148 016c 304CFE3F 		.word	1073630256
+ 1149 0170 304CFE3F 		.word	1073630256
+ 1150 0174 304CFE3F 		.word	1073630256
+ 1151 0178 304CFE3F 		.word	1073630256
+ 1152 017c 304CFE3F 		.word	1073630256
+ 1153 0180 304CFE3F 		.word	1073630256
+ 1154 0184 304CFE3F 		.word	1073630256
+ 1155 0188 304CFE3F 		.word	1073630256
+ 1156 018c B6F3FD3F 		.word	1073607606
+ 1157 0190 B6F3FD3F 		.word	1073607606
+ 1158 0194 B6F3FD3F 		.word	1073607606
+ 1159 0198 B6F3FD3F 		.word	1073607606
+ 1160 019c B6F3FD3F 		.word	1073607606
+ 1161 01a0 B6F3FD3F 		.word	1073607606
+ 1162 01a4 B6F3FD3F 		.word	1073607606
+ 1163 01a8 B6F3FD3F 		.word	1073607606
+ 1164 01ac B6F3FD3F 		.word	1073607606
+ 1165 01b0 B6F3FD3F 		.word	1073607606
+ 1166 01b4 9FABFD3F 		.word	1073589151
+ 1167 01b8 9FABFD3F 		.word	1073589151
+ 1168 01bc 9FABFD3F 		.word	1073589151
+ 1169 01c0 9FABFD3F 		.word	1073589151
+ 1170 01c4 9FABFD3F 		.word	1073589151
+ 1171 01c8 9FABFD3F 		.word	1073589151
+ 1172 01cc 9FABFD3F 		.word	1073589151
+ 1173 01d0 9FABFD3F 		.word	1073589151
+ 1174 01d4 9FABFD3F 		.word	1073589151
+ 1175 01d8 9FABFD3F 		.word	1073589151
+ 1176 01dc 5D6DFD3F 		.word	1073573213
+ 1177 01e0 0000803F 		.word	1065353216
+ 1178              		.section	.rodata.iMaskFind,"a"
+ 1179              		.align	2
+ 1182              	iMaskFind:
+ 1183 0000 FFFF0000 		.word	65535
+ 1184              		.text
+ 1185              	.Letext0:
+ 1186              		.file 2 "c:\\users\\user\\appdata\\roaming\\code\\user\\globalstorage\\bmd.stm32-for-vscode\\@xpac
+ 1187              		.file 3 "c:\\users\\user\\appdata\\roaming\\code\\user\\globalstorage\\bmd.stm32-for-vscode\\@xpac
+ 1188              		.file 4 "Core/Src/Detector/Code/FindX.h"
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 31
+
+
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 32
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 FindX.c
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:18     .text.ssqrt:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:26     .text.ssqrt:0000000000000000 ssqrt
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:65     .text.ssqrt:0000000000000024 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:70     .text.FW5_Write:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:77     .text.FW5_Write:0000000000000000 FW5_Write
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:96     .text.FW5_Write:000000000000000c $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:101    .text.FW5_SetPorog:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:108    .text.FW5_SetPorog:0000000000000000 FW5_SetPorog
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:129    .text.FW5_SetPorog:000000000000000c $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:135    .text.FW5_Clear:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:142    .text.FW5_Clear:0000000000000000 FW5_Clear
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:159    .text.FW5_Clear:0000000000000008 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:164    .text.FW5_Calibration:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:171    .text.FW5_Calibration:0000000000000000 FW5_Calibration
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:207    .text.FW5_Calibration:000000000000001c $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:212    .text.FW5_Valid:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:219    .text.FW5_Valid:0000000000000000 FW5_Valid
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:238    .text.FW5_Valid:0000000000000010 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:247    .text.FW5_CalculatePorog_i:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:254    .text.FW5_CalculatePorog_i:0000000000000000 FW5_CalculatePorog_i
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:387    .text.FW5_CalculatePorog_i:0000000000000088 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:394    .text.FW5_Read:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:401    .text.FW5_Read:0000000000000000 FW5_Read
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:579    .text.FW5_Read:00000000000000f0 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:587    .text.FW5_Find:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:594    .text.FW5_Find:0000000000000000 FW5_Find
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:825    .text.FW5_Find:0000000000000108 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:836    .text.FW5_G5Find:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:843    .text.FW5_G5Find:0000000000000000 FW5_G5Find
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:972    .text.FW5_G5Find:0000000000000068 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1042   .bss._out:0000000000000000 _out
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:986    .bss.FW5Data:0000000000000000 FW5Data
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1056   .rodata.Kst:0000000000000000 Kst
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1182   .rodata.iMaskFind:0000000000000000 iMaskFind
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:982    .bss.FW5Data:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:989    .bss.Find_Sigma:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:993    .bss.Find_Sigma:0000000000000000 Find_Sigma
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:996    .bss.K.3:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1000   .bss.K.3:0000000000000000 K.3
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1003   .bss.Kmax.2:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1007   .bss.Kmax.2:0000000000000000 Kmax.2
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1010   .bss.Porog_cpsi.0:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1014   .bss.Porog_cpsi.0:0000000000000000 Porog_cpsi.0
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1017   .bss.SDTi.4:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1021   .bss.SDTi.4:0000000000000000 SDTi.4
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1024   .bss.Sours_cpsi.1:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1028   .bss.Sours_cpsi.1:0000000000000000 Sours_cpsi.1
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1031   .bss.TFW5_Tcall:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1035   .bss.TFW5_Tcall:0000000000000000 TFW5_Tcall
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1038   .bss._out:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1045   .bss.i.5:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1049   .bss.i.5:0000000000000000 i.5
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1052   .rodata.Kst:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccTWcVwG.s:1179   .rodata.iMaskFind:0000000000000000 $d
+
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccTWcVwG.s 			page 33
+
+
+UNDEFINED SYMBOLS
+__aeabi_f2d
+__aeabi_dadd
+__aeabi_dmul
+__aeabi_d2f

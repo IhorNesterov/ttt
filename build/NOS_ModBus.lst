@@ -1,0 +1,1027 @@
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"NOS_ModBus.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.GetCRC16,"ax",%progbits
+  18              		.align	1
+  19              		.global	GetCRC16
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	GetCRC16:
+  27              	.LVL0:
+  28              	.LFB0:
+  29              		.file 1 "Core/Src/NOS_ModBus.c"
+   1:Core/Src/NOS_ModBus.c **** #include "NOS_ModBus.h"
+   2:Core/Src/NOS_ModBus.c **** #include <stdint.h>
+   3:Core/Src/NOS_ModBus.c **** #include "NOS_Typedefs.h"
+   4:Core/Src/NOS_ModBus.c **** 
+   5:Core/Src/NOS_ModBus.c **** uint16_t GetCRC16 (uint8_t *nData, uint8_t wLength)
+   6:Core/Src/NOS_ModBus.c **** {
+  30              		.loc 1 6 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+  35              		.loc 1 6 1 is_stmt 0 view .LVU1
+  36 0000 0346     		mov	r3, r0
+   7:Core/Src/NOS_ModBus.c **** static const uint16_t wCRCTable[] = {
+  37              		.loc 1 7 1 is_stmt 1 view .LVU2
+   8:Core/Src/NOS_ModBus.c **** 0X0000, 0XC0C1, 0XC181, 0X0140, 0XC301, 0X03C0, 0X0280, 0XC241,
+   9:Core/Src/NOS_ModBus.c **** 0XC601, 0X06C0, 0X0780, 0XC741, 0X0500, 0XC5C1, 0XC481, 0X0440,
+  10:Core/Src/NOS_ModBus.c **** 0XCC01, 0X0CC0, 0X0D80, 0XCD41, 0X0F00, 0XCFC1, 0XCE81, 0X0E40,
+  11:Core/Src/NOS_ModBus.c **** 0X0A00, 0XCAC1, 0XCB81, 0X0B40, 0XC901, 0X09C0, 0X0880, 0XC841,
+  12:Core/Src/NOS_ModBus.c **** 0XD801, 0X18C0, 0X1980, 0XD941, 0X1B00, 0XDBC1, 0XDA81, 0X1A40,
+  13:Core/Src/NOS_ModBus.c **** 0X1E00, 0XDEC1, 0XDF81, 0X1F40, 0XDD01, 0X1DC0, 0X1C80, 0XDC41,
+  14:Core/Src/NOS_ModBus.c **** 0X1400, 0XD4C1, 0XD581, 0X1540, 0XD701, 0X17C0, 0X1680, 0XD641,
+  15:Core/Src/NOS_ModBus.c **** 0XD201, 0X12C0, 0X1380, 0XD341, 0X1100, 0XD1C1, 0XD081, 0X1040,
+  16:Core/Src/NOS_ModBus.c **** 0XF001, 0X30C0, 0X3180, 0XF141, 0X3300, 0XF3C1, 0XF281, 0X3240,
+  17:Core/Src/NOS_ModBus.c **** 0X3600, 0XF6C1, 0XF781, 0X3740, 0XF501, 0X35C0, 0X3480, 0XF441,
+  18:Core/Src/NOS_ModBus.c **** 0X3C00, 0XFCC1, 0XFD81, 0X3D40, 0XFF01, 0X3FC0, 0X3E80, 0XFE41,
+  19:Core/Src/NOS_ModBus.c **** 0XFA01, 0X3AC0, 0X3B80, 0XFB41, 0X3900, 0XF9C1, 0XF881, 0X3840,
+  20:Core/Src/NOS_ModBus.c **** 0X2800, 0XE8C1, 0XE981, 0X2940, 0XEB01, 0X2BC0, 0X2A80, 0XEA41,
+  21:Core/Src/NOS_ModBus.c **** 0XEE01, 0X2EC0, 0X2F80, 0XEF41, 0X2D00, 0XEDC1, 0XEC81, 0X2C40,
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 2
+
+
+  22:Core/Src/NOS_ModBus.c **** 0XE401, 0X24C0, 0X2580, 0XE541, 0X2700, 0XE7C1, 0XE681, 0X2640,
+  23:Core/Src/NOS_ModBus.c **** 0X2200, 0XE2C1, 0XE381, 0X2340, 0XE101, 0X21C0, 0X2080, 0XE041,
+  24:Core/Src/NOS_ModBus.c **** 0XA001, 0X60C0, 0X6180, 0XA141, 0X6300, 0XA3C1, 0XA281, 0X6240,
+  25:Core/Src/NOS_ModBus.c **** 0X6600, 0XA6C1, 0XA781, 0X6740, 0XA501, 0X65C0, 0X6480, 0XA441,
+  26:Core/Src/NOS_ModBus.c **** 0X6C00, 0XACC1, 0XAD81, 0X6D40, 0XAF01, 0X6FC0, 0X6E80, 0XAE41,
+  27:Core/Src/NOS_ModBus.c **** 0XAA01, 0X6AC0, 0X6B80, 0XAB41, 0X6900, 0XA9C1, 0XA881, 0X6840,
+  28:Core/Src/NOS_ModBus.c **** 0X7800, 0XB8C1, 0XB981, 0X7940, 0XBB01, 0X7BC0, 0X7A80, 0XBA41,
+  29:Core/Src/NOS_ModBus.c **** 0XBE01, 0X7EC0, 0X7F80, 0XBF41, 0X7D00, 0XBDC1, 0XBC81, 0X7C40,
+  30:Core/Src/NOS_ModBus.c **** 0XB401, 0X74C0, 0X7580, 0XB541, 0X7700, 0XB7C1, 0XB681, 0X7640,
+  31:Core/Src/NOS_ModBus.c **** 0X7200, 0XB2C1, 0XB381, 0X7340, 0XB101, 0X71C0, 0X7080, 0XB041,
+  32:Core/Src/NOS_ModBus.c **** 0X5000, 0X90C1, 0X9181, 0X5140, 0X9301, 0X53C0, 0X5280, 0X9241,
+  33:Core/Src/NOS_ModBus.c **** 0X9601, 0X56C0, 0X5780, 0X9741, 0X5500, 0X95C1, 0X9481, 0X5440,
+  34:Core/Src/NOS_ModBus.c **** 0X9C01, 0X5CC0, 0X5D80, 0X9D41, 0X5F00, 0X9FC1, 0X9E81, 0X5E40,
+  35:Core/Src/NOS_ModBus.c **** 0X5A00, 0X9AC1, 0X9B81, 0X5B40, 0X9901, 0X59C0, 0X5880, 0X9841,
+  36:Core/Src/NOS_ModBus.c **** 0X8801, 0X48C0, 0X4980, 0X8941, 0X4B00, 0X8BC1, 0X8A81, 0X4A40,
+  37:Core/Src/NOS_ModBus.c **** 0X4E00, 0X8EC1, 0X8F81, 0X4F40, 0X8D01, 0X4DC0, 0X4C80, 0X8C41,
+  38:Core/Src/NOS_ModBus.c **** 0X4400, 0X84C1, 0X8581, 0X4540, 0X8701, 0X47C0, 0X4680, 0X8641,
+  39:Core/Src/NOS_ModBus.c **** 0X8201, 0X42C0, 0X4380, 0X8341, 0X4100, 0X81C1, 0X8081, 0X4040 };
+  40:Core/Src/NOS_ModBus.c **** 
+  41:Core/Src/NOS_ModBus.c **** uint8_t nTemp;
+  38              		.loc 1 41 1 view .LVU3
+  42:Core/Src/NOS_ModBus.c **** uint16_t wCRCWord = 0xFFFF;
+  39              		.loc 1 42 1 view .LVU4
+  40              	.LVL1:
+  43:Core/Src/NOS_ModBus.c **** 
+  44:Core/Src/NOS_ModBus.c ****    while (wLength--)
+  41              		.loc 1 44 4 view .LVU5
+  42:Core/Src/NOS_ModBus.c **** uint16_t wCRCWord = 0xFFFF;
+  42              		.loc 1 42 10 is_stmt 0 view .LVU6
+  43 0002 4FF6FF70 		movw	r0, #65535
+  44              	.LVL2:
+  45              		.loc 1 44 10 is_stmt 1 view .LVU7
+  46              		.loc 1 44 18 is_stmt 0 view .LVU8
+  47 0006 4A1E     		subs	r2, r1, #1
+  48 0008 D2B2     		uxtb	r2, r2
+  49              	.LVL3:
+  50              		.loc 1 44 10 view .LVU9
+  51 000a 89B1     		cbz	r1, .L8
+   6:Core/Src/NOS_ModBus.c **** static const uint16_t wCRCTable[] = {
+  52              		.loc 1 6 1 view .LVU10
+  53 000c 10B4     		push	{r4}
+  54              	.LCFI0:
+  55              		.cfi_def_cfa_offset 4
+  56              		.cfi_offset 4, -4
+  57              	.L3:
+  45:Core/Src/NOS_ModBus.c ****    {
+  46:Core/Src/NOS_ModBus.c ****       nTemp = *nData++ ^ wCRCWord;
+  58              		.loc 1 46 7 is_stmt 1 view .LVU11
+  59              	.LVL4:
+  60              		.loc 1 46 15 is_stmt 0 view .LVU12
+  61 000e 13F8011B 		ldrb	r1, [r3], #1	@ zero_extendqisi2
+  62              	.LVL5:
+  63              		.loc 1 46 24 view .LVU13
+  64 0012 C4B2     		uxtb	r4, r0
+  65              		.loc 1 46 13 view .LVU14
+  66 0014 6140     		eors	r1, r1, r4
+  67              	.LVL6:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 3
+
+
+  47:Core/Src/NOS_ModBus.c ****       wCRCWord >>= 8;
+  68              		.loc 1 47 7 is_stmt 1 view .LVU15
+  48:Core/Src/NOS_ModBus.c ****       wCRCWord ^= wCRCTable[nTemp];
+  69              		.loc 1 48 7 view .LVU16
+  70              		.loc 1 48 28 is_stmt 0 view .LVU17
+  71 0016 074C     		ldr	r4, .L9
+  72 0018 34F81110 		ldrh	r1, [r4, r1, lsl #1]
+  73              	.LVL7:
+  74              		.loc 1 48 16 view .LVU18
+  75 001c 81EA1020 		eor	r0, r1, r0, lsr #8
+  76              	.LVL8:
+  44:Core/Src/NOS_ModBus.c ****    {
+  77              		.loc 1 44 18 view .LVU19
+  78 0020 1146     		mov	r1, r2
+  44:Core/Src/NOS_ModBus.c ****    {
+  79              		.loc 1 44 10 is_stmt 1 view .LVU20
+  44:Core/Src/NOS_ModBus.c ****    {
+  80              		.loc 1 44 18 is_stmt 0 view .LVU21
+  81 0022 013A     		subs	r2, r2, #1
+  82              	.LVL9:
+  44:Core/Src/NOS_ModBus.c ****    {
+  83              		.loc 1 44 18 view .LVU22
+  84 0024 D2B2     		uxtb	r2, r2
+  85              	.LVL10:
+  44:Core/Src/NOS_ModBus.c ****    {
+  86              		.loc 1 44 10 view .LVU23
+  87 0026 0029     		cmp	r1, #0
+  88 0028 F1D1     		bne	.L3
+  49:Core/Src/NOS_ModBus.c ****    }
+  50:Core/Src/NOS_ModBus.c ****    return wCRCWord;
+  89              		.loc 1 50 4 is_stmt 1 view .LVU24
+  51:Core/Src/NOS_ModBus.c **** 
+  52:Core/Src/NOS_ModBus.c **** }
+  90              		.loc 1 52 1 is_stmt 0 view .LVU25
+  91 002a 5DF8044B 		ldr	r4, [sp], #4
+  92              	.LCFI1:
+  93              		.cfi_restore 4
+  94              		.cfi_def_cfa_offset 0
+  95 002e 7047     		bx	lr
+  96              	.L8:
+  97              		.loc 1 52 1 view .LVU26
+  98 0030 7047     		bx	lr
+  99              	.L10:
+ 100 0032 00BF     		.align	2
+ 101              	.L9:
+ 102 0034 00000000 		.word	.LANCHOR0
+ 103              		.cfi_endproc
+ 104              	.LFE0:
+ 106              		.section	.text.NOS_ModBus_ParseMasterCommand,"ax",%progbits
+ 107              		.align	1
+ 108              		.global	NOS_ModBus_ParseMasterCommand
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 112              		.fpu fpv4-sp-d16
+ 114              	NOS_ModBus_ParseMasterCommand:
+ 115              	.LVL11:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 4
+
+
+ 116              	.LFB1:
+  53:Core/Src/NOS_ModBus.c **** 
+  54:Core/Src/NOS_ModBus.c **** void NOS_ModBus_ParseMasterCommand(ModBus_Master_Command* master,uint8_t* buff,uint8_t offset)
+  55:Core/Src/NOS_ModBus.c **** {
+ 117              		.loc 1 55 1 is_stmt 1 view -0
+ 118              		.cfi_startproc
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121              		@ link register save eliminated.
+  56:Core/Src/NOS_ModBus.c ****     NOS_Short com;
+ 122              		.loc 1 56 5 view .LVU28
+  57:Core/Src/NOS_ModBus.c ****     master->Addr = buff[offset];
+ 123              		.loc 1 57 5 view .LVU29
+ 124              		.loc 1 57 24 is_stmt 0 view .LVU30
+ 125 0000 8B5C     		ldrb	r3, [r1, r2]	@ zero_extendqisi2
+ 126              		.loc 1 57 18 view .LVU31
+ 127 0002 4370     		strb	r3, [r0, #1]
+  58:Core/Src/NOS_ModBus.c ****     master->Command = buff[offset + 1];
+ 128              		.loc 1 58 5 is_stmt 1 view .LVU32
+ 129              		.loc 1 58 27 is_stmt 0 view .LVU33
+ 130 0004 8B18     		adds	r3, r1, r2
+ 131 0006 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 132              		.loc 1 58 21 view .LVU34
+ 133 0008 8370     		strb	r3, [r0, #2]
+  59:Core/Src/NOS_ModBus.c **** 
+  60:Core/Src/NOS_ModBus.c ****     switch(master->Command)
+ 134              		.loc 1 60 5 is_stmt 1 view .LVU35
+ 135 000a 062B     		cmp	r3, #6
+ 136 000c 16D0     		beq	.L12
+ 137 000e 102B     		cmp	r3, #16
+ 138 0010 28D0     		beq	.L13
+ 139 0012 032B     		cmp	r3, #3
+ 140 0014 00D0     		beq	.L15
+ 141              	.LVL12:
+ 142              	.L11:
+  61:Core/Src/NOS_ModBus.c ****     {
+  62:Core/Src/NOS_ModBus.c ****     case 0x03:
+  63:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 2];
+  64:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+  65:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+  66:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 4];
+  67:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+  68:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+  69:Core/Src/NOS_ModBus.c ****         break;
+  70:Core/Src/NOS_ModBus.c **** 
+  71:Core/Src/NOS_ModBus.c ****     case 0x06:
+  72:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 2];
+  73:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+  74:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+  75:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 4];
+  76:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+  77:Core/Src/NOS_ModBus.c ****         master->ShortValue.data = com.data;
+  78:Core/Src/NOS_ModBus.c ****         master->type = 0;
+  79:Core/Src/NOS_ModBus.c ****         break;
+  80:Core/Src/NOS_ModBus.c **** 
+  81:Core/Src/NOS_ModBus.c ****     case 0x10:
+  82:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 3];
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 5
+
+
+  83:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 4];
+  84:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+  85:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 5];
+  86:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 6];
+  87:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+  88:Core/Src/NOS_ModBus.c ****         master->Byte_Count = buff[offset + 7];
+  89:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[3] = buff[offset + 8];
+  90:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[2] = buff[offset + 9];
+  91:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[1] = buff[offset + 10];
+  92:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[0] = buff[offset + 11];
+  93:Core/Src/NOS_ModBus.c ****         master->type = 1;
+  94:Core/Src/NOS_ModBus.c ****         break;
+  95:Core/Src/NOS_ModBus.c ****     
+  96:Core/Src/NOS_ModBus.c ****     default:
+  97:Core/Src/NOS_ModBus.c ****    // NOS_Error_Handler("Master command out of range");
+  98:Core/Src/NOS_ModBus.c ****         break;
+  99:Core/Src/NOS_ModBus.c ****     }
+ 100:Core/Src/NOS_ModBus.c **** }
+ 143              		.loc 1 100 1 is_stmt 0 view .LVU36
+ 144 0016 7047     		bx	lr
+ 145              	.LVL13:
+ 146              	.L15:
+  63:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 147              		.loc 1 63 9 is_stmt 1 view .LVU37
+  63:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 148              		.loc 1 63 28 is_stmt 0 view .LVU38
+ 149 0018 1144     		add	r1, r1, r2
+ 150              	.LVL14:
+  63:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 151              		.loc 1 63 28 view .LVU39
+ 152 001a 8A78     		ldrb	r2, [r1, #2]	@ zero_extendqisi2
+ 153              	.LVL15:
+  63:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 154              		.loc 1 63 22 view .LVU40
+ 155 001c 4FF00003 		mov	r3, #0	@ movhi
+ 156              	.LVL16:
+  63:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 157              		.loc 1 63 22 view .LVU41
+ 158 0020 62F30F23 		bfi	r3, r2, #8, #8
+ 159              	.LVL17:
+  64:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 160              		.loc 1 64 9 is_stmt 1 view .LVU42
+  64:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 161              		.loc 1 64 28 is_stmt 0 view .LVU43
+ 162 0024 CA78     		ldrb	r2, [r1, #3]	@ zero_extendqisi2
+  64:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 163              		.loc 1 64 22 view .LVU44
+ 164 0026 62F30703 		bfi	r3, r2, #0, #8
+  65:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 4];
+ 165              		.loc 1 65 9 is_stmt 1 view .LVU45
+  65:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 4];
+ 166              		.loc 1 65 26 is_stmt 0 view .LVU46
+ 167 002a 8380     		strh	r3, [r0, #4]	@ movhi
+  66:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+ 168              		.loc 1 66 9 is_stmt 1 view .LVU47
+  66:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+ 169              		.loc 1 66 28 is_stmt 0 view .LVU48
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 6
+
+
+ 170 002c 0A79     		ldrb	r2, [r1, #4]	@ zero_extendqisi2
+  66:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+ 171              		.loc 1 66 22 view .LVU49
+ 172 002e 62F30F23 		bfi	r3, r2, #8, #8
+  67:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+ 173              		.loc 1 67 9 is_stmt 1 view .LVU50
+  67:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+ 174              		.loc 1 67 28 is_stmt 0 view .LVU51
+ 175 0032 4A79     		ldrb	r2, [r1, #5]	@ zero_extendqisi2
+  67:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+ 176              		.loc 1 67 22 view .LVU52
+ 177 0034 62F30703 		bfi	r3, r2, #0, #8
+  68:Core/Src/NOS_ModBus.c ****         break;
+ 178              		.loc 1 68 9 is_stmt 1 view .LVU53
+  68:Core/Src/NOS_ModBus.c ****         break;
+ 179              		.loc 1 68 27 is_stmt 0 view .LVU54
+ 180 0038 C380     		strh	r3, [r0, #6]	@ movhi
+  69:Core/Src/NOS_ModBus.c **** 
+ 181              		.loc 1 69 9 is_stmt 1 view .LVU55
+ 182 003a 7047     		bx	lr
+ 183              	.LVL18:
+ 184              	.L12:
+  72:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 185              		.loc 1 72 9 view .LVU56
+  72:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 186              		.loc 1 72 28 is_stmt 0 view .LVU57
+ 187 003c 1144     		add	r1, r1, r2
+ 188              	.LVL19:
+  72:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 189              		.loc 1 72 28 view .LVU58
+ 190 003e 8A78     		ldrb	r2, [r1, #2]	@ zero_extendqisi2
+ 191              	.LVL20:
+  72:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 192              		.loc 1 72 22 view .LVU59
+ 193 0040 4FF00003 		mov	r3, #0	@ movhi
+  72:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 3];
+ 194              		.loc 1 72 22 view .LVU60
+ 195 0044 62F30F23 		bfi	r3, r2, #8, #8
+ 196              	.LVL21:
+  73:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 197              		.loc 1 73 9 is_stmt 1 view .LVU61
+  73:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 198              		.loc 1 73 28 is_stmt 0 view .LVU62
+ 199 0048 CA78     		ldrb	r2, [r1, #3]	@ zero_extendqisi2
+  73:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 200              		.loc 1 73 22 view .LVU63
+ 201 004a 62F30703 		bfi	r3, r2, #0, #8
+  74:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 4];
+ 202              		.loc 1 74 9 is_stmt 1 view .LVU64
+  74:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 4];
+ 203              		.loc 1 74 26 is_stmt 0 view .LVU65
+ 204 004e 8380     		strh	r3, [r0, #4]	@ movhi
+  75:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+ 205              		.loc 1 75 9 is_stmt 1 view .LVU66
+  75:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+ 206              		.loc 1 75 28 is_stmt 0 view .LVU67
+ 207 0050 0A79     		ldrb	r2, [r1, #4]	@ zero_extendqisi2
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 7
+
+
+  75:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 5];
+ 208              		.loc 1 75 22 view .LVU68
+ 209 0052 62F30F23 		bfi	r3, r2, #8, #8
+  76:Core/Src/NOS_ModBus.c ****         master->ShortValue.data = com.data;
+ 210              		.loc 1 76 9 is_stmt 1 view .LVU69
+  76:Core/Src/NOS_ModBus.c ****         master->ShortValue.data = com.data;
+ 211              		.loc 1 76 28 is_stmt 0 view .LVU70
+ 212 0056 4A79     		ldrb	r2, [r1, #5]	@ zero_extendqisi2
+  76:Core/Src/NOS_ModBus.c ****         master->ShortValue.data = com.data;
+ 213              		.loc 1 76 22 view .LVU71
+ 214 0058 62F30703 		bfi	r3, r2, #0, #8
+  77:Core/Src/NOS_ModBus.c ****         master->type = 0;
+ 215              		.loc 1 77 9 is_stmt 1 view .LVU72
+  77:Core/Src/NOS_ModBus.c ****         master->type = 0;
+ 216              		.loc 1 77 33 is_stmt 0 view .LVU73
+ 217 005c 0381     		strh	r3, [r0, #8]	@ movhi
+  78:Core/Src/NOS_ModBus.c ****         break;
+ 218              		.loc 1 78 9 is_stmt 1 view .LVU74
+  78:Core/Src/NOS_ModBus.c ****         break;
+ 219              		.loc 1 78 22 is_stmt 0 view .LVU75
+ 220 005e 0023     		movs	r3, #0
+ 221              	.LVL22:
+  78:Core/Src/NOS_ModBus.c ****         break;
+ 222              		.loc 1 78 22 view .LVU76
+ 223 0060 0370     		strb	r3, [r0]
+  79:Core/Src/NOS_ModBus.c **** 
+ 224              		.loc 1 79 9 is_stmt 1 view .LVU77
+ 225 0062 7047     		bx	lr
+ 226              	.LVL23:
+ 227              	.L13:
+  82:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 4];
+ 228              		.loc 1 82 9 view .LVU78
+  82:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 4];
+ 229              		.loc 1 82 28 is_stmt 0 view .LVU79
+ 230 0064 1144     		add	r1, r1, r2
+ 231              	.LVL24:
+  82:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 4];
+ 232              		.loc 1 82 28 view .LVU80
+ 233 0066 CA78     		ldrb	r2, [r1, #3]	@ zero_extendqisi2
+ 234              	.LVL25:
+  82:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 4];
+ 235              		.loc 1 82 22 view .LVU81
+ 236 0068 4FF00003 		mov	r3, #0	@ movhi
+  82:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 4];
+ 237              		.loc 1 82 22 view .LVU82
+ 238 006c 62F30F23 		bfi	r3, r2, #8, #8
+ 239              	.LVL26:
+  83:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 240              		.loc 1 83 9 is_stmt 1 view .LVU83
+  83:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 241              		.loc 1 83 28 is_stmt 0 view .LVU84
+ 242 0070 0A79     		ldrb	r2, [r1, #4]	@ zero_extendqisi2
+  83:Core/Src/NOS_ModBus.c ****         master->Reg_Addr = com.data;
+ 243              		.loc 1 83 22 view .LVU85
+ 244 0072 62F30703 		bfi	r3, r2, #0, #8
+  84:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 5];
+ 245              		.loc 1 84 9 is_stmt 1 view .LVU86
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 8
+
+
+  84:Core/Src/NOS_ModBus.c ****         com.bytes[1] = buff[offset + 5];
+ 246              		.loc 1 84 26 is_stmt 0 view .LVU87
+ 247 0076 8380     		strh	r3, [r0, #4]	@ movhi
+  85:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 6];
+ 248              		.loc 1 85 9 is_stmt 1 view .LVU88
+  85:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 6];
+ 249              		.loc 1 85 28 is_stmt 0 view .LVU89
+ 250 0078 4A79     		ldrb	r2, [r1, #5]	@ zero_extendqisi2
+  85:Core/Src/NOS_ModBus.c ****         com.bytes[0] = buff[offset + 6];
+ 251              		.loc 1 85 22 view .LVU90
+ 252 007a 62F30F23 		bfi	r3, r2, #8, #8
+  86:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+ 253              		.loc 1 86 9 is_stmt 1 view .LVU91
+  86:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+ 254              		.loc 1 86 28 is_stmt 0 view .LVU92
+ 255 007e 8A79     		ldrb	r2, [r1, #6]	@ zero_extendqisi2
+  86:Core/Src/NOS_ModBus.c ****         master->Reg_Count = com.data;
+ 256              		.loc 1 86 22 view .LVU93
+ 257 0080 62F30703 		bfi	r3, r2, #0, #8
+  87:Core/Src/NOS_ModBus.c ****         master->Byte_Count = buff[offset + 7];
+ 258              		.loc 1 87 9 is_stmt 1 view .LVU94
+  87:Core/Src/NOS_ModBus.c ****         master->Byte_Count = buff[offset + 7];
+ 259              		.loc 1 87 27 is_stmt 0 view .LVU95
+ 260 0084 C380     		strh	r3, [r0, #6]	@ movhi
+  88:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[3] = buff[offset + 8];
+ 261              		.loc 1 88 9 is_stmt 1 view .LVU96
+  88:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[3] = buff[offset + 8];
+ 262              		.loc 1 88 34 is_stmt 0 view .LVU97
+ 263 0086 CB79     		ldrb	r3, [r1, #7]	@ zero_extendqisi2
+ 264              	.LVL27:
+  88:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[3] = buff[offset + 8];
+ 265              		.loc 1 88 28 view .LVU98
+ 266 0088 C370     		strb	r3, [r0, #3]
+  89:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[2] = buff[offset + 9];
+ 267              		.loc 1 89 9 is_stmt 1 view .LVU99
+  89:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[2] = buff[offset + 9];
+ 268              		.loc 1 89 43 is_stmt 0 view .LVU100
+ 269 008a 0B7A     		ldrb	r3, [r1, #8]	@ zero_extendqisi2
+  89:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[2] = buff[offset + 9];
+ 270              		.loc 1 89 37 view .LVU101
+ 271 008c C373     		strb	r3, [r0, #15]
+  90:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[1] = buff[offset + 10];
+ 272              		.loc 1 90 9 is_stmt 1 view .LVU102
+  90:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[1] = buff[offset + 10];
+ 273              		.loc 1 90 43 is_stmt 0 view .LVU103
+ 274 008e 4B7A     		ldrb	r3, [r1, #9]	@ zero_extendqisi2
+  90:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[1] = buff[offset + 10];
+ 275              		.loc 1 90 37 view .LVU104
+ 276 0090 8373     		strb	r3, [r0, #14]
+  91:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[0] = buff[offset + 11];
+ 277              		.loc 1 91 9 is_stmt 1 view .LVU105
+  91:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[0] = buff[offset + 11];
+ 278              		.loc 1 91 43 is_stmt 0 view .LVU106
+ 279 0092 8B7A     		ldrb	r3, [r1, #10]	@ zero_extendqisi2
+  91:Core/Src/NOS_ModBus.c ****         master->FloatValue.bytes[0] = buff[offset + 11];
+ 280              		.loc 1 91 37 view .LVU107
+ 281 0094 4373     		strb	r3, [r0, #13]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 9
+
+
+  92:Core/Src/NOS_ModBus.c ****         master->type = 1;
+ 282              		.loc 1 92 9 is_stmt 1 view .LVU108
+  92:Core/Src/NOS_ModBus.c ****         master->type = 1;
+ 283              		.loc 1 92 43 is_stmt 0 view .LVU109
+ 284 0096 CB7A     		ldrb	r3, [r1, #11]	@ zero_extendqisi2
+  92:Core/Src/NOS_ModBus.c ****         master->type = 1;
+ 285              		.loc 1 92 37 view .LVU110
+ 286 0098 0373     		strb	r3, [r0, #12]
+  93:Core/Src/NOS_ModBus.c ****         break;
+ 287              		.loc 1 93 9 is_stmt 1 view .LVU111
+  93:Core/Src/NOS_ModBus.c ****         break;
+ 288              		.loc 1 93 22 is_stmt 0 view .LVU112
+ 289 009a 0123     		movs	r3, #1
+ 290 009c 0370     		strb	r3, [r0]
+  94:Core/Src/NOS_ModBus.c ****     
+ 291              		.loc 1 94 9 is_stmt 1 view .LVU113
+ 292              		.loc 1 100 1 is_stmt 0 view .LVU114
+ 293 009e BAE7     		b	.L11
+ 294              		.cfi_endproc
+ 295              	.LFE1:
+ 297              		.section	.text.NOS_ModBus_ParseSlaveCommand,"ax",%progbits
+ 298              		.align	1
+ 299              		.global	NOS_ModBus_ParseSlaveCommand
+ 300              		.syntax unified
+ 301              		.thumb
+ 302              		.thumb_func
+ 303              		.fpu fpv4-sp-d16
+ 305              	NOS_ModBus_ParseSlaveCommand:
+ 306              	.LVL28:
+ 307              	.LFB2:
+ 101:Core/Src/NOS_ModBus.c **** 
+ 102:Core/Src/NOS_ModBus.c **** void NOS_ModBus_ParseSlaveCommand(ModBus_Slave_Command* slave,uint8_t* buff,uint8_t offset)
+ 103:Core/Src/NOS_ModBus.c **** {
+ 308              		.loc 1 103 1 is_stmt 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 0, pretend = 0, frame = 0
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312              		@ link register save eliminated.
+ 104:Core/Src/NOS_ModBus.c ****    slave->Addr = buff[offset];
+ 313              		.loc 1 104 4 view .LVU116
+ 314              		.loc 1 104 22 is_stmt 0 view .LVU117
+ 315 0000 8B5C     		ldrb	r3, [r1, r2]	@ zero_extendqisi2
+ 316              		.loc 1 104 16 view .LVU118
+ 317 0002 4370     		strb	r3, [r0, #1]
+ 105:Core/Src/NOS_ModBus.c ****    slave->Command = buff[offset + 1];
+ 318              		.loc 1 105 4 is_stmt 1 view .LVU119
+ 319              		.loc 1 105 25 is_stmt 0 view .LVU120
+ 320 0004 01EB020C 		add	ip, r1, r2
+ 321 0008 9CF80130 		ldrb	r3, [ip, #1]	@ zero_extendqisi2
+ 322              		.loc 1 105 19 view .LVU121
+ 323 000c 8370     		strb	r3, [r0, #2]
+ 106:Core/Src/NOS_ModBus.c ****    slave->Byte_Count = buff[offset + 2];
+ 324              		.loc 1 106 4 is_stmt 1 view .LVU122
+ 325              		.loc 1 106 28 is_stmt 0 view .LVU123
+ 326 000e 9CF802C0 		ldrb	ip, [ip, #2]	@ zero_extendqisi2
+ 327              		.loc 1 106 22 view .LVU124
+ 328 0012 80F803C0 		strb	ip, [r0, #3]
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 10
+
+
+ 107:Core/Src/NOS_ModBus.c **** 
+ 108:Core/Src/NOS_ModBus.c ****    switch(slave->Command)
+ 329              		.loc 1 108 4 is_stmt 1 view .LVU125
+ 330 0016 032B     		cmp	r3, #3
+ 331 0018 00D0     		beq	.L19
+ 332              	.LVL29:
+ 333              	.L16:
+ 109:Core/Src/NOS_ModBus.c ****    {
+ 110:Core/Src/NOS_ModBus.c ****        case 0x03:
+ 111:Core/Src/NOS_ModBus.c ****        if(slave->Byte_Count == 2)
+ 112:Core/Src/NOS_ModBus.c ****        {
+ 113:Core/Src/NOS_ModBus.c ****           slave->ShortValue.bytes[1] = buff[offset + 3];
+ 114:Core/Src/NOS_ModBus.c ****           slave->ShortValue.bytes[0] = buff[offset + 4];
+ 115:Core/Src/NOS_ModBus.c ****           slave->type = 0;
+ 116:Core/Src/NOS_ModBus.c ****        }
+ 117:Core/Src/NOS_ModBus.c ****        else
+ 118:Core/Src/NOS_ModBus.c ****        {
+ 119:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[3] = buff[offset + 3];
+ 120:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[2] = buff[offset + 4];
+ 121:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[1] = buff[offset + 5];
+ 122:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[0] = buff[offset + 6];
+ 123:Core/Src/NOS_ModBus.c ****           slave->type = 1;
+ 124:Core/Src/NOS_ModBus.c ****        }
+ 125:Core/Src/NOS_ModBus.c ****        break;
+ 126:Core/Src/NOS_ModBus.c **** 
+ 127:Core/Src/NOS_ModBus.c ****        default:
+ 128:Core/Src/NOS_ModBus.c ****  //         NOS_Error_Handler("Slave command out of range");
+ 129:Core/Src/NOS_ModBus.c ****        break;
+ 130:Core/Src/NOS_ModBus.c ****    }
+ 131:Core/Src/NOS_ModBus.c **** }
+ 334              		.loc 1 131 1 is_stmt 0 view .LVU126
+ 335 001a 7047     		bx	lr
+ 336              	.LVL30:
+ 337              	.L19:
+ 111:Core/Src/NOS_ModBus.c ****        {
+ 338              		.loc 1 111 8 is_stmt 1 view .LVU127
+ 111:Core/Src/NOS_ModBus.c ****        {
+ 339              		.loc 1 111 10 is_stmt 0 view .LVU128
+ 340 001c BCF1020F 		cmp	ip, #2
+ 341 0020 0BD0     		beq	.L20
+ 119:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[2] = buff[offset + 4];
+ 342              		.loc 1 119 11 is_stmt 1 view .LVU129
+ 119:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[2] = buff[offset + 4];
+ 343              		.loc 1 119 44 is_stmt 0 view .LVU130
+ 344 0022 1144     		add	r1, r1, r2
+ 345              	.LVL31:
+ 119:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[2] = buff[offset + 4];
+ 346              		.loc 1 119 44 view .LVU131
+ 347 0024 CB78     		ldrb	r3, [r1, #3]	@ zero_extendqisi2
+ 119:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[2] = buff[offset + 4];
+ 348              		.loc 1 119 38 view .LVU132
+ 349 0026 C372     		strb	r3, [r0, #11]
+ 120:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[1] = buff[offset + 5];
+ 350              		.loc 1 120 11 is_stmt 1 view .LVU133
+ 120:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[1] = buff[offset + 5];
+ 351              		.loc 1 120 44 is_stmt 0 view .LVU134
+ 352 0028 0B79     		ldrb	r3, [r1, #4]	@ zero_extendqisi2
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 11
+
+
+ 120:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[1] = buff[offset + 5];
+ 353              		.loc 1 120 38 view .LVU135
+ 354 002a 8372     		strb	r3, [r0, #10]
+ 121:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[0] = buff[offset + 6];
+ 355              		.loc 1 121 11 is_stmt 1 view .LVU136
+ 121:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[0] = buff[offset + 6];
+ 356              		.loc 1 121 44 is_stmt 0 view .LVU137
+ 357 002c 4B79     		ldrb	r3, [r1, #5]	@ zero_extendqisi2
+ 121:Core/Src/NOS_ModBus.c ****           slave->FloatValue.bytes[0] = buff[offset + 6];
+ 358              		.loc 1 121 38 view .LVU138
+ 359 002e 4372     		strb	r3, [r0, #9]
+ 122:Core/Src/NOS_ModBus.c ****           slave->type = 1;
+ 360              		.loc 1 122 11 is_stmt 1 view .LVU139
+ 122:Core/Src/NOS_ModBus.c ****           slave->type = 1;
+ 361              		.loc 1 122 44 is_stmt 0 view .LVU140
+ 362 0030 8B79     		ldrb	r3, [r1, #6]	@ zero_extendqisi2
+ 122:Core/Src/NOS_ModBus.c ****           slave->type = 1;
+ 363              		.loc 1 122 38 view .LVU141
+ 364 0032 0372     		strb	r3, [r0, #8]
+ 123:Core/Src/NOS_ModBus.c ****        }
+ 365              		.loc 1 123 11 is_stmt 1 view .LVU142
+ 123:Core/Src/NOS_ModBus.c ****        }
+ 366              		.loc 1 123 23 is_stmt 0 view .LVU143
+ 367 0034 0123     		movs	r3, #1
+ 368 0036 0370     		strb	r3, [r0]
+ 369              		.loc 1 131 1 view .LVU144
+ 370 0038 EFE7     		b	.L16
+ 371              	.LVL32:
+ 372              	.L20:
+ 113:Core/Src/NOS_ModBus.c ****           slave->ShortValue.bytes[0] = buff[offset + 4];
+ 373              		.loc 1 113 11 is_stmt 1 view .LVU145
+ 113:Core/Src/NOS_ModBus.c ****           slave->ShortValue.bytes[0] = buff[offset + 4];
+ 374              		.loc 1 113 44 is_stmt 0 view .LVU146
+ 375 003a 1144     		add	r1, r1, r2
+ 376              	.LVL33:
+ 113:Core/Src/NOS_ModBus.c ****           slave->ShortValue.bytes[0] = buff[offset + 4];
+ 377              		.loc 1 113 44 view .LVU147
+ 378 003c CB78     		ldrb	r3, [r1, #3]	@ zero_extendqisi2
+ 113:Core/Src/NOS_ModBus.c ****           slave->ShortValue.bytes[0] = buff[offset + 4];
+ 379              		.loc 1 113 38 view .LVU148
+ 380 003e 4371     		strb	r3, [r0, #5]
+ 114:Core/Src/NOS_ModBus.c ****           slave->type = 0;
+ 381              		.loc 1 114 11 is_stmt 1 view .LVU149
+ 114:Core/Src/NOS_ModBus.c ****           slave->type = 0;
+ 382              		.loc 1 114 44 is_stmt 0 view .LVU150
+ 383 0040 0B79     		ldrb	r3, [r1, #4]	@ zero_extendqisi2
+ 114:Core/Src/NOS_ModBus.c ****           slave->type = 0;
+ 384              		.loc 1 114 38 view .LVU151
+ 385 0042 0371     		strb	r3, [r0, #4]
+ 115:Core/Src/NOS_ModBus.c ****        }
+ 386              		.loc 1 115 11 is_stmt 1 view .LVU152
+ 115:Core/Src/NOS_ModBus.c ****        }
+ 387              		.loc 1 115 23 is_stmt 0 view .LVU153
+ 388 0044 0023     		movs	r3, #0
+ 389 0046 0370     		strb	r3, [r0]
+ 390 0048 7047     		bx	lr
+ 391              		.cfi_endproc
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 12
+
+
+ 392              	.LFE2:
+ 394              		.section	.text.NOS_ModBus_SetMasterCommand,"ax",%progbits
+ 395              		.align	1
+ 396              		.global	NOS_ModBus_SetMasterCommand
+ 397              		.syntax unified
+ 398              		.thumb
+ 399              		.thumb_func
+ 400              		.fpu fpv4-sp-d16
+ 402              	NOS_ModBus_SetMasterCommand:
+ 403              	.LVL34:
+ 404              	.LFB3:
+ 132:Core/Src/NOS_ModBus.c **** 
+ 133:Core/Src/NOS_ModBus.c **** 
+ 134:Core/Src/NOS_ModBus.c **** void NOS_ModBus_SetMasterCommand(ModBus_Master_Command* master,uint8_t addr,uint8_t command,uint16_
+ 135:Core/Src/NOS_ModBus.c **** {
+ 405              		.loc 1 135 1 is_stmt 1 view -0
+ 406              		.cfi_startproc
+ 407              		@ args = 4, pretend = 0, frame = 0
+ 408              		@ frame_needed = 0, uses_anonymous_args = 0
+ 409              		@ link register save eliminated.
+ 136:Core/Src/NOS_ModBus.c ****    
+ 137:Core/Src/NOS_ModBus.c **** }
+ 410              		.loc 1 137 1 view .LVU155
+ 411 0000 7047     		bx	lr
+ 412              		.cfi_endproc
+ 413              	.LFE3:
+ 415              		.section	.text.NOS_ModBus_SetSlaveCommand,"ax",%progbits
+ 416              		.align	1
+ 417              		.global	NOS_ModBus_SetSlaveCommand
+ 418              		.syntax unified
+ 419              		.thumb
+ 420              		.thumb_func
+ 421              		.fpu fpv4-sp-d16
+ 423              	NOS_ModBus_SetSlaveCommand:
+ 424              	.LVL35:
+ 425              	.LFB4:
+ 138:Core/Src/NOS_ModBus.c **** 
+ 139:Core/Src/NOS_ModBus.c **** void NOS_ModBus_SetSlaveCommand(ModBus_Slave_Command* slave,uint8_t addr,uint8_t command,uint8_t by
+ 140:Core/Src/NOS_ModBus.c **** {
+ 426              		.loc 1 140 1 view -0
+ 427              		.cfi_startproc
+ 428              		@ args = 12, pretend = 0, frame = 0
+ 429              		@ frame_needed = 0, uses_anonymous_args = 0
+ 430              		@ link register save eliminated.
+ 141:Core/Src/NOS_ModBus.c ****    slave->Addr = addr;
+ 431              		.loc 1 141 4 view .LVU157
+ 432              		.loc 1 141 16 is_stmt 0 view .LVU158
+ 433 0000 4170     		strb	r1, [r0, #1]
+ 142:Core/Src/NOS_ModBus.c ****    slave->Byte_Count = byteCount;
+ 434              		.loc 1 142 4 is_stmt 1 view .LVU159
+ 435              		.loc 1 142 22 is_stmt 0 view .LVU160
+ 436 0002 C370     		strb	r3, [r0, #3]
+ 143:Core/Src/NOS_ModBus.c ****    slave->ShortValue = sVal;
+ 437              		.loc 1 143 4 is_stmt 1 view .LVU161
+ 438              		.loc 1 143 22 is_stmt 0 view .LVU162
+ 439 0004 BDF80430 		ldrh	r3, [sp, #4]
+ 440              	.LVL36:
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 13
+
+
+ 441              		.loc 1 143 22 view .LVU163
+ 442 0008 8380     		strh	r3, [r0, #4]	@ movhi
+ 144:Core/Src/NOS_ModBus.c **** }
+ 443              		.loc 1 144 1 view .LVU164
+ 444 000a 7047     		bx	lr
+ 445              		.cfi_endproc
+ 446              	.LFE4:
+ 448              		.section	.rodata.wCRCTable.0,"a"
+ 449              		.align	2
+ 450              		.set	.LANCHOR0,. + 0
+ 453              	wCRCTable.0:
+ 454 0000 0000     		.short	0
+ 455 0002 C1C0     		.short	-16191
+ 456 0004 81C1     		.short	-15999
+ 457 0006 4001     		.short	320
+ 458 0008 01C3     		.short	-15615
+ 459 000a C003     		.short	960
+ 460 000c 8002     		.short	640
+ 461 000e 41C2     		.short	-15807
+ 462 0010 01C6     		.short	-14847
+ 463 0012 C006     		.short	1728
+ 464 0014 8007     		.short	1920
+ 465 0016 41C7     		.short	-14527
+ 466 0018 0005     		.short	1280
+ 467 001a C1C5     		.short	-14911
+ 468 001c 81C4     		.short	-15231
+ 469 001e 4004     		.short	1088
+ 470 0020 01CC     		.short	-13311
+ 471 0022 C00C     		.short	3264
+ 472 0024 800D     		.short	3456
+ 473 0026 41CD     		.short	-12991
+ 474 0028 000F     		.short	3840
+ 475 002a C1CF     		.short	-12351
+ 476 002c 81CE     		.short	-12671
+ 477 002e 400E     		.short	3648
+ 478 0030 000A     		.short	2560
+ 479 0032 C1CA     		.short	-13631
+ 480 0034 81CB     		.short	-13439
+ 481 0036 400B     		.short	2880
+ 482 0038 01C9     		.short	-14079
+ 483 003a C009     		.short	2496
+ 484 003c 8008     		.short	2176
+ 485 003e 41C8     		.short	-14271
+ 486 0040 01D8     		.short	-10239
+ 487 0042 C018     		.short	6336
+ 488 0044 8019     		.short	6528
+ 489 0046 41D9     		.short	-9919
+ 490 0048 001B     		.short	6912
+ 491 004a C1DB     		.short	-9279
+ 492 004c 81DA     		.short	-9599
+ 493 004e 401A     		.short	6720
+ 494 0050 001E     		.short	7680
+ 495 0052 C1DE     		.short	-8511
+ 496 0054 81DF     		.short	-8319
+ 497 0056 401F     		.short	8000
+ 498 0058 01DD     		.short	-8959
+ 499 005a C01D     		.short	7616
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 14
+
+
+ 500 005c 801C     		.short	7296
+ 501 005e 41DC     		.short	-9151
+ 502 0060 0014     		.short	5120
+ 503 0062 C1D4     		.short	-11071
+ 504 0064 81D5     		.short	-10879
+ 505 0066 4015     		.short	5440
+ 506 0068 01D7     		.short	-10495
+ 507 006a C017     		.short	6080
+ 508 006c 8016     		.short	5760
+ 509 006e 41D6     		.short	-10687
+ 510 0070 01D2     		.short	-11775
+ 511 0072 C012     		.short	4800
+ 512 0074 8013     		.short	4992
+ 513 0076 41D3     		.short	-11455
+ 514 0078 0011     		.short	4352
+ 515 007a C1D1     		.short	-11839
+ 516 007c 81D0     		.short	-12159
+ 517 007e 4010     		.short	4160
+ 518 0080 01F0     		.short	-4095
+ 519 0082 C030     		.short	12480
+ 520 0084 8031     		.short	12672
+ 521 0086 41F1     		.short	-3775
+ 522 0088 0033     		.short	13056
+ 523 008a C1F3     		.short	-3135
+ 524 008c 81F2     		.short	-3455
+ 525 008e 4032     		.short	12864
+ 526 0090 0036     		.short	13824
+ 527 0092 C1F6     		.short	-2367
+ 528 0094 81F7     		.short	-2175
+ 529 0096 4037     		.short	14144
+ 530 0098 01F5     		.short	-2815
+ 531 009a C035     		.short	13760
+ 532 009c 8034     		.short	13440
+ 533 009e 41F4     		.short	-3007
+ 534 00a0 003C     		.short	15360
+ 535 00a2 C1FC     		.short	-831
+ 536 00a4 81FD     		.short	-639
+ 537 00a6 403D     		.short	15680
+ 538 00a8 01FF     		.short	-255
+ 539 00aa C03F     		.short	16320
+ 540 00ac 803E     		.short	16000
+ 541 00ae 41FE     		.short	-447
+ 542 00b0 01FA     		.short	-1535
+ 543 00b2 C03A     		.short	15040
+ 544 00b4 803B     		.short	15232
+ 545 00b6 41FB     		.short	-1215
+ 546 00b8 0039     		.short	14592
+ 547 00ba C1F9     		.short	-1599
+ 548 00bc 81F8     		.short	-1919
+ 549 00be 4038     		.short	14400
+ 550 00c0 0028     		.short	10240
+ 551 00c2 C1E8     		.short	-5951
+ 552 00c4 81E9     		.short	-5759
+ 553 00c6 4029     		.short	10560
+ 554 00c8 01EB     		.short	-5375
+ 555 00ca C02B     		.short	11200
+ 556 00cc 802A     		.short	10880
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 15
+
+
+ 557 00ce 41EA     		.short	-5567
+ 558 00d0 01EE     		.short	-4607
+ 559 00d2 C02E     		.short	11968
+ 560 00d4 802F     		.short	12160
+ 561 00d6 41EF     		.short	-4287
+ 562 00d8 002D     		.short	11520
+ 563 00da C1ED     		.short	-4671
+ 564 00dc 81EC     		.short	-4991
+ 565 00de 402C     		.short	11328
+ 566 00e0 01E4     		.short	-7167
+ 567 00e2 C024     		.short	9408
+ 568 00e4 8025     		.short	9600
+ 569 00e6 41E5     		.short	-6847
+ 570 00e8 0027     		.short	9984
+ 571 00ea C1E7     		.short	-6207
+ 572 00ec 81E6     		.short	-6527
+ 573 00ee 4026     		.short	9792
+ 574 00f0 0022     		.short	8704
+ 575 00f2 C1E2     		.short	-7487
+ 576 00f4 81E3     		.short	-7295
+ 577 00f6 4023     		.short	9024
+ 578 00f8 01E1     		.short	-7935
+ 579 00fa C021     		.short	8640
+ 580 00fc 8020     		.short	8320
+ 581 00fe 41E0     		.short	-8127
+ 582 0100 01A0     		.short	-24575
+ 583 0102 C060     		.short	24768
+ 584 0104 8061     		.short	24960
+ 585 0106 41A1     		.short	-24255
+ 586 0108 0063     		.short	25344
+ 587 010a C1A3     		.short	-23615
+ 588 010c 81A2     		.short	-23935
+ 589 010e 4062     		.short	25152
+ 590 0110 0066     		.short	26112
+ 591 0112 C1A6     		.short	-22847
+ 592 0114 81A7     		.short	-22655
+ 593 0116 4067     		.short	26432
+ 594 0118 01A5     		.short	-23295
+ 595 011a C065     		.short	26048
+ 596 011c 8064     		.short	25728
+ 597 011e 41A4     		.short	-23487
+ 598 0120 006C     		.short	27648
+ 599 0122 C1AC     		.short	-21311
+ 600 0124 81AD     		.short	-21119
+ 601 0126 406D     		.short	27968
+ 602 0128 01AF     		.short	-20735
+ 603 012a C06F     		.short	28608
+ 604 012c 806E     		.short	28288
+ 605 012e 41AE     		.short	-20927
+ 606 0130 01AA     		.short	-22015
+ 607 0132 C06A     		.short	27328
+ 608 0134 806B     		.short	27520
+ 609 0136 41AB     		.short	-21695
+ 610 0138 0069     		.short	26880
+ 611 013a C1A9     		.short	-22079
+ 612 013c 81A8     		.short	-22399
+ 613 013e 4068     		.short	26688
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 16
+
+
+ 614 0140 0078     		.short	30720
+ 615 0142 C1B8     		.short	-18239
+ 616 0144 81B9     		.short	-18047
+ 617 0146 4079     		.short	31040
+ 618 0148 01BB     		.short	-17663
+ 619 014a C07B     		.short	31680
+ 620 014c 807A     		.short	31360
+ 621 014e 41BA     		.short	-17855
+ 622 0150 01BE     		.short	-16895
+ 623 0152 C07E     		.short	32448
+ 624 0154 807F     		.short	32640
+ 625 0156 41BF     		.short	-16575
+ 626 0158 007D     		.short	32000
+ 627 015a C1BD     		.short	-16959
+ 628 015c 81BC     		.short	-17279
+ 629 015e 407C     		.short	31808
+ 630 0160 01B4     		.short	-19455
+ 631 0162 C074     		.short	29888
+ 632 0164 8075     		.short	30080
+ 633 0166 41B5     		.short	-19135
+ 634 0168 0077     		.short	30464
+ 635 016a C1B7     		.short	-18495
+ 636 016c 81B6     		.short	-18815
+ 637 016e 4076     		.short	30272
+ 638 0170 0072     		.short	29184
+ 639 0172 C1B2     		.short	-19775
+ 640 0174 81B3     		.short	-19583
+ 641 0176 4073     		.short	29504
+ 642 0178 01B1     		.short	-20223
+ 643 017a C071     		.short	29120
+ 644 017c 8070     		.short	28800
+ 645 017e 41B0     		.short	-20415
+ 646 0180 0050     		.short	20480
+ 647 0182 C190     		.short	-28479
+ 648 0184 8191     		.short	-28287
+ 649 0186 4051     		.short	20800
+ 650 0188 0193     		.short	-27903
+ 651 018a C053     		.short	21440
+ 652 018c 8052     		.short	21120
+ 653 018e 4192     		.short	-28095
+ 654 0190 0196     		.short	-27135
+ 655 0192 C056     		.short	22208
+ 656 0194 8057     		.short	22400
+ 657 0196 4197     		.short	-26815
+ 658 0198 0055     		.short	21760
+ 659 019a C195     		.short	-27199
+ 660 019c 8194     		.short	-27519
+ 661 019e 4054     		.short	21568
+ 662 01a0 019C     		.short	-25599
+ 663 01a2 C05C     		.short	23744
+ 664 01a4 805D     		.short	23936
+ 665 01a6 419D     		.short	-25279
+ 666 01a8 005F     		.short	24320
+ 667 01aa C19F     		.short	-24639
+ 668 01ac 819E     		.short	-24959
+ 669 01ae 405E     		.short	24128
+ 670 01b0 005A     		.short	23040
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 17
+
+
+ 671 01b2 C19A     		.short	-25919
+ 672 01b4 819B     		.short	-25727
+ 673 01b6 405B     		.short	23360
+ 674 01b8 0199     		.short	-26367
+ 675 01ba C059     		.short	22976
+ 676 01bc 8058     		.short	22656
+ 677 01be 4198     		.short	-26559
+ 678 01c0 0188     		.short	-30719
+ 679 01c2 C048     		.short	18624
+ 680 01c4 8049     		.short	18816
+ 681 01c6 4189     		.short	-30399
+ 682 01c8 004B     		.short	19200
+ 683 01ca C18B     		.short	-29759
+ 684 01cc 818A     		.short	-30079
+ 685 01ce 404A     		.short	19008
+ 686 01d0 004E     		.short	19968
+ 687 01d2 C18E     		.short	-28991
+ 688 01d4 818F     		.short	-28799
+ 689 01d6 404F     		.short	20288
+ 690 01d8 018D     		.short	-29439
+ 691 01da C04D     		.short	19904
+ 692 01dc 804C     		.short	19584
+ 693 01de 418C     		.short	-29631
+ 694 01e0 0044     		.short	17408
+ 695 01e2 C184     		.short	-31551
+ 696 01e4 8185     		.short	-31359
+ 697 01e6 4045     		.short	17728
+ 698 01e8 0187     		.short	-30975
+ 699 01ea C047     		.short	18368
+ 700 01ec 8046     		.short	18048
+ 701 01ee 4186     		.short	-31167
+ 702 01f0 0182     		.short	-32255
+ 703 01f2 C042     		.short	17088
+ 704 01f4 8043     		.short	17280
+ 705 01f6 4183     		.short	-31935
+ 706 01f8 0041     		.short	16640
+ 707 01fa C181     		.short	-32319
+ 708 01fc 8180     		.short	-32639
+ 709 01fe 4040     		.short	16448
+ 710              		.text
+ 711              	.Letext0:
+ 712              		.file 2 "c:\\users\\user\\appdata\\roaming\\code\\user\\globalstorage\\bmd.stm32-for-vscode\\@xpac
+ 713              		.file 3 "c:\\users\\user\\appdata\\roaming\\code\\user\\globalstorage\\bmd.stm32-for-vscode\\@xpac
+ 714              		.file 4 "Core/Src/NOS_Typedefs.h"
+ARM GAS  C:\Users\user\AppData\Local\Temp\ccmueVGL.s 			page 18
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 NOS_ModBus.c
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:18     .text.GetCRC16:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:26     .text.GetCRC16:0000000000000000 GetCRC16
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:102    .text.GetCRC16:0000000000000034 $d
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:107    .text.NOS_ModBus_ParseMasterCommand:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:114    .text.NOS_ModBus_ParseMasterCommand:0000000000000000 NOS_ModBus_ParseMasterCommand
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:298    .text.NOS_ModBus_ParseSlaveCommand:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:305    .text.NOS_ModBus_ParseSlaveCommand:0000000000000000 NOS_ModBus_ParseSlaveCommand
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:395    .text.NOS_ModBus_SetMasterCommand:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:402    .text.NOS_ModBus_SetMasterCommand:0000000000000000 NOS_ModBus_SetMasterCommand
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:416    .text.NOS_ModBus_SetSlaveCommand:0000000000000000 $t
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:423    .text.NOS_ModBus_SetSlaveCommand:0000000000000000 NOS_ModBus_SetSlaveCommand
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:449    .rodata.wCRCTable.0:0000000000000000 $d
+C:\Users\user\AppData\Local\Temp\ccmueVGL.s:453    .rodata.wCRCTable.0:0000000000000000 wCRCTable.0
+
+NO UNDEFINED SYMBOLS
