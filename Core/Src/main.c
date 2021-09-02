@@ -59,9 +59,10 @@ bool rx_flag = false;
 bool tx_flag = false;
 uint8_t tx_buff[16];
 uint8_t counter = 0;
-NOS_Short tickcount1;
+volatile NOS_Short tickcount1;
+volatile NOS_Short tickcountBuff;
 uint32_t tickcount2 = 0;
-
+bool time250ms = false;
 NOS_Short time;
 TStatus_Stat stat;
 /* USER CODE END PV */
@@ -123,8 +124,8 @@ void NOS_ModBus_SendSlaveCommand(ModBus_Slave_Command* slave)
     tx_buff[7] = dat.bytes[1];
     tx_buff[8] = dat.bytes[0];
     tx_buff[9] = stat.Status;
-    tx_buff[10] = tickcount1.bytes[1];
-    tx_buff[11] = tickcount1.bytes[0];
+    tx_buff[10] = tickcountBuff.bytes[1];
+    tx_buff[11] = tickcountBuff.bytes[0];
 
     HAL_UART_Transmit_IT(&huart2,tx_buff,12); 
   } 
@@ -188,20 +189,14 @@ void SysTick_Handler(void)
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 time.data++;
-if(time.data >= 250)
-{
-  counter++;
-  Stat_AddData250ms(tickcount1.data);
-  if(counter >= 4)
-  {
-    slave.type = 5;
-    NOS_ModBus_SendSlaveCommand(&slave);
-    counter = 0; 
-  }
-  
-  time.data = 0;
-  tickcount1.data = 0;
+if(time.data >= 250) {
+   Stat_AddData250ms(tickcount1.data);
+   tickcountBuff.data = tickcount1.data;
+   tickcount1.data = 0;      
+   time250ms = true;
+   time.data = 0;
 }
+
 }
 
 void EXTI0_IRQHandler(void)
@@ -272,6 +267,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+     if(time250ms)
+     {
+        counter++;
+        if(counter >= 4)
+        {
+           slave.type = 5;
+           NOS_ModBus_SendSlaveCommand(&slave);
+           counter = 0; 
+        }
+        time250ms = false;
+     }
+
      if(rx_flag)
     {
       NOS_ModBus_ParseMasterCommand(&master,&rx_buff,0);
